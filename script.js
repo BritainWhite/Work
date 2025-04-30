@@ -87,4 +87,5 @@ document.getElementById("fetchAndSave").addEventListener("click", async () => {
   } catch (err) {
     alert("Fetch failed: " + err.message);
   }
+  await generateTrailerLinks(); // Refresh links based on new init data
 });
