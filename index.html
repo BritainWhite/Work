@@ -7,6 +7,7 @@
     textarea { width: 100%; height: 100px; margin-bottom: 1em; }
     button { padding: 0.5em 1em; font-size: 1em; }
     #status { margin-top: 1em; font-weight: bold; }
+    #trailerLinks p { margin: 0.5em 0; }
   </style>
 </head>
 <body>
@@ -14,17 +15,18 @@
   <form id="jsonForm">
     <label for="customDate">Optional custom date (yyyy/mm/dd):</label>
     <input type="text" id="customDate" placeholder="e.g. 2025/04/30">
+    
     <p>
       <a id="init" href="#"></a>
     </p>
-    <button id="fetchAndSave">Fetch and Save Page</button>
-    
+
+    <button id="fetchAndSave" type="button">Fetch and Save Page</button>
+
     <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
-    
-    <!-- 🔽 Trailer links grouped here -->
+
+    <!-- 🛠 FIXED: added trailerLinks container here -->
     <div id="trailerLinks"></div>
-    
-    <!-- 🔽 Trailer JSON inputs follow -->
+
     <textarea id="field2" placeholder="Paste JSON for trailer1.json"></textarea>
     <textarea id="field3" placeholder="Paste JSON for trailer2.json"></textarea>
     <textarea id="field4" placeholder="Paste JSON for trailer3.json"></textarea>
@@ -36,6 +38,7 @@
 
     <button type="submit">Submit</button>
   </form>
+
   <div id="status"></div>
   <script src="script.js"></script>
 </body>
