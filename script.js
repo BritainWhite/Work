@@ -18,8 +18,6 @@ async function generateTrailerLinks() {
       wrapper.appendChild(link);
       container.appendChild(wrapper);
     });
-  } catch (err) {
-    console.error("Failed to load trailer links", err);
   }
 }
 
