@@ -15,7 +15,7 @@ document.getElementById("jsonForm").addEventListener("submit", async function (e
   let response;
 
   try {
-    response = await fetch("https://03c6-134-22-159-4.ngrok-free.app/submit", {
+    response = await fetch("valid-grossly-gibbon.ngrok-free.app/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
