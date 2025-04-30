@@ -16,17 +16,14 @@
     <label for="customDate">Optional custom date (yyyy/mm/dd):</label>
     <input type="text" id="customDate" placeholder="e.g. 2025/04/30">
     
-    <p>
-      <a id="init" href="#"></a>
-    </p>
+    <p><a id="init" href="#">Init Link</a></p>
 
-    <button id="fetchAndSave" type="button">Fetch and Save Page</button>
-
-    <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
-
-    <!-- 🛠 FIXED: added trailerLinks container here -->
+    <!-- 🚨 This line was missing: -->
     <div id="trailerLinks"></div>
 
+    <button id="fetchAndSave">Fetch and Save Page</button>
+    
+    <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
     <textarea id="field2" placeholder="Paste JSON for trailer1.json"></textarea>
     <textarea id="field3" placeholder="Paste JSON for trailer2.json"></textarea>
     <textarea id="field4" placeholder="Paste JSON for trailer3.json"></textarea>
@@ -35,11 +32,11 @@
     <textarea id="field7" placeholder="Paste JSON for trailer6.json"></textarea>
     <textarea id="field8" placeholder="Paste JSON for trailer7.json"></textarea>
     <textarea id="field9" placeholder="Paste JSON for trailer8.json"></textarea>
-
+    
     <button type="submit">Submit</button>
   </form>
-
   <div id="status"></div>
+
   <script src="script.js"></script>
 </body>
 </html>
