@@ -2,8 +2,10 @@ async function generateTrailerLinks() {
   const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids");
   const { business_date, trailer_transLoadId_list } = await res.json();
 
+  if (!business_date || !Array.isArray(trailer_transLoadId_list)) return;
+
   const container = document.getElementById("trailerLinks");
-  container.innerHTML = ""; // Clear any existing links
+  container.innerHTML = ""; // Clear existing
 
   const formattedDate = business_date.replace(/-/g, "/");
 
@@ -19,8 +21,7 @@ async function generateTrailerLinks() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", async function () {
-  // Init link
+window.addEventListener("DOMContentLoaded", async () => {
   const customInput = document.getElementById("customDate");
   const link = document.getElementById("init");
 
@@ -34,10 +35,7 @@ window.addEventListener("DOMContentLoaded", async function () {
       formattedDate = inputValue;
     } else {
       const now = new Date();
-      const currentHour = now.getHours();
-      if (currentHour === 0 || currentHour < 6) {
-        now.setDate(now.getDate() - 1);
-      }
+      if (now.getHours() < 6) now.setDate(now.getDate() - 1);
 
       const yyyy = now.getFullYear();
       const mm = String(now.getMonth() + 1).padStart(2, "0");
@@ -54,8 +52,7 @@ window.addEventListener("DOMContentLoaded", async function () {
   updateLink();
   customInput.addEventListener("input", updateLink);
 
-  // Now call the trailer link generator
-  await generateTrailerLinks();
+  await generateTrailerLinks(); // Fetch trailer links on page load
 });
 
 document.getElementById("fetchAndSave").addEventListener("click", async () => {
@@ -68,14 +65,12 @@ document.getElementById("fetchAndSave").addEventListener("click", async () => {
     const submitRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        field: 99,
-        json: text
-      })
+      body: JSON.stringify({ field: 99, json: text })
     });
 
     if (submitRes.ok) {
       alert("Fetched and saved as test1.json!");
+      await generateTrailerLinks(); // ✅ Refresh links only if submit was OK
     } else {
       const errorText = await submitRes.text();
       alert("Server error: " + errorText);
@@ -83,5 +78,4 @@ document.getElementById("fetchAndSave").addEventListener("click", async () => {
   } catch (err) {
     alert("Fetch failed: " + err.message);
   }
-  await generateTrailerLinks(); // Refresh links based on new init data
 });
