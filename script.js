@@ -37,7 +37,7 @@ document.getElementById("jsonForm").addEventListener("submit", async function (e
   }
 });
 
-(function updateInitLink() {
+window.addEventListener("DOMContentLoaded", function () {
   const now = new Date();
   const currentHour = now.getHours();
 
@@ -55,4 +55,4 @@ document.getElementById("jsonForm").addEventListener("submit", async function (e
   const link = document.getElementById("init");
   link.href = url;
   link.innerText = url;
-})();
+});
