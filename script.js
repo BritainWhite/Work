@@ -1,24 +1,22 @@
 async function generateTrailerLinks() {
-  try {
-    const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids");
-    const { business_date, trailer_transLoadId_list } = await res.json();
+  const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids");
+  const { business_date, trailer_transLoadId_list } = await res.json();
 
-    const container = document.getElementById("trailerLinks");
-    container.innerHTML = ""; // Clear any existing links
+  const container = document.getElementById("trailerLinks");
+  container.innerHTML = ""; // Clear any existing links
 
-    const formattedDate = business_date.replace(/-/g, "/");
+  const formattedDate = business_date.replace(/-/g, "/");
 
-    trailer_transLoadId_list.forEach((id, index) => {
-      const link = document.createElement("a");
-      link.href = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Shipments.ashx?func=getLoadSummaryAndDetailsFromAPI&storeNbr=5307&businessDate=${formattedDate}&loadID=${id}`;
-      link.innerText = `Trailer ${index + 1}: ${id}`;
-      link.target = "_blank";
+  trailer_transLoadId_list.forEach((id, index) => {
+    const link = document.createElement("a");
+    link.href = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Shipments.ashx?func=getLoadSummaryAndDetailsFromAPI&storeNbr=5307&businessDate=${formattedDate}&loadID=${id}`;
+    link.innerText = `Trailer ${index + 1}: ${id}`;
+    link.target = "_blank";
 
-      const wrapper = document.createElement("p");
-      wrapper.appendChild(link);
-      container.appendChild(wrapper);
-    });
-  }
+    const wrapper = document.createElement("p");
+    wrapper.appendChild(link);
+    container.appendChild(wrapper);
+  });
 }
 
 window.addEventListener("DOMContentLoaded", async function () {
