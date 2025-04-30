@@ -1,5 +1,9 @@
 async function generateTrailerLinks() {
-  const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids");
+  const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids", {
+    headers: {
+      "ngrok-skip-browser-warning": "true"
+    }
+  });
   const { business_date, trailer_transLoadId_list } = await res.json();
 
   if (!business_date || !Array.isArray(trailer_transLoadId_list)) return;
