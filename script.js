@@ -41,7 +41,7 @@ window.addEventListener("DOMContentLoaded", function () {
   const now = new Date();
   const currentHour = now.getHours();
 
-  if (currentHour === 0 || currentHour < 12) {
+  if (currentHour === 0 || currentHour < 16) {
     now.setDate(now.getDate() - 1);
   }
 
