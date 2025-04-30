@@ -4,6 +4,8 @@ async function generateTrailerLinks() {
     const { business_date, trailer_transLoadId_list } = await res.json();
 
     const container = document.getElementById("trailerLinks");
+    container.innerHTML = ""; // Clear any existing links
+
     const formattedDate = business_date.replace(/-/g, "/");
 
     trailer_transLoadId_list.forEach((id, index) => {
@@ -21,46 +23,8 @@ async function generateTrailerLinks() {
   }
 }
 
-window.addEventListener("DOMContentLoaded", generateTrailerLinks);
-
-document.getElementById("jsonForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const fields = Array.from({ length: 9 }, (_, i) => document.getElementById(`field${i + 1}`).value.trim());
-  
-  const filledFields = fields.filter(f => f !== "");
-  if (filledFields.length !== 1) {
-    document.getElementById("status").innerText = "Please fill exactly ONE field.";
-    return;
-  }
-  
-  let fieldNumber = fields.findIndex(f => f !== "") + 1;
-  let response;
-
-  try {
-    response = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        field: fieldNumber,
-        json: filledFields[0]
-      })
-    });
-  } catch (err) {
-    document.getElementById("status").innerText = "Error: Could not reach server.";
-    return;
-  }
-
-  if (response.ok) {
-    document.getElementById("status").innerText = "Submitted successfully!";
-    document.getElementById("jsonForm").reset();
-  } else {
-    const error = await response.text();
-    document.getElementById("status").innerText = `Server error: ${error}`;
-  }
-});
-
-window.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("DOMContentLoaded", async function () {
+  // Init link
   const customInput = document.getElementById("customDate");
   const link = document.getElementById("init");
 
@@ -91,9 +55,11 @@ window.addEventListener("DOMContentLoaded", function () {
     link.innerText = url;
   }
 
-  // Update link immediately and whenever the input changes
   updateLink();
   customInput.addEventListener("input", updateLink);
+
+  // Now call the trailer link generator
+  await generateTrailerLinks();
 });
 
 document.getElementById("fetchAndSave").addEventListener("click", async () => {
@@ -101,14 +67,13 @@ document.getElementById("fetchAndSave").addEventListener("click", async () => {
 
   try {
     const response = await fetch(url);
-    const text = await response.text(); // Get raw HTML, XML, etc.
+    const text = await response.text();
 
-    // Send the content to your local server
     const submitRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        field: 99, // We'll treat 99 as "test1.json" on the server
+        field: 99,
         json: text
       })
     });
