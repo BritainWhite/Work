@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>JSON Submitter</title>
+  <title>Submit JSON</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 1em; }
+    textarea { width: 100%; height: 100px; margin-bottom: 1em; }
+    button { padding: 0.5em 1em; font-size: 1em; }
+    #status { margin-top: 1em; font-weight: bold; }
+  </style>
 </head>
 <body>
   <h1>Submit JSON</h1>
   <form id="jsonForm">
-    <textarea id="field1" placeholder="Paste JSON for doc1.json"></textarea><br>
-    <textarea id="field2" placeholder="Paste JSON for doc2.json"></textarea><br>
-    <textarea id="field3" placeholder="Paste JSON for doc3.json"></textarea><br>
+    <textarea id="field1" placeholder="Paste JSON for doc1.json"></textarea>
+    <textarea id="field2" placeholder="Paste JSON for doc2.json"></textarea>
+    <textarea id="field3" placeholder="Paste JSON for doc3.json"></textarea>
     <button type="submit">Submit</button>
   </form>
-  <p id="status"></p>
+  <div id="status"></div>
   <script src="script.js"></script>
 </body>
 </html>
