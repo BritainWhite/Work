@@ -38,23 +38,39 @@ document.getElementById("jsonForm").addEventListener("submit", async function (e
 });
 
 window.addEventListener("DOMContentLoaded", function () {
-  const now = new Date();
-  const currentHour = now.getHours();
+  const customInput = document.getElementById("customDate");
+  const link = document.getElementById("init");
 
-  if (currentHour === 0 || currentHour < 9) {
-    now.setDate(now.getDate() - 1);
+  function updateLink() {
+    let formattedDate;
+
+    const inputValue = customInput.value.trim();
+    const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
+
+    if (inputValue && validFormat.test(inputValue)) {
+      formattedDate = inputValue;
+    } else {
+      const now = new Date();
+      const currentHour = now.getHours();
+      if (currentHour === 0 || currentHour < 6) {
+        now.setDate(now.getDate() - 1);
+      }
+
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+
+      formattedDate = `${yyyy}/${mm}/${dd}`;
+    }
+
+    const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
+    link.href = url;
+    link.innerText = url;
   }
 
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-
-  const formattedDate = `${yyyy}/${mm}/${dd}`;
-  const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
-
-  const link = document.getElementById("init");
-  link.href = url;
-  link.innerText = url;
+  // Update link immediately and whenever the input changes
+  updateLink();
+  customInput.addEventListener("input", updateLink);
 });
 
 document.getElementById("fetchAndSave").addEventListener("click", async () => {
