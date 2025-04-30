@@ -56,3 +56,31 @@ window.addEventListener("DOMContentLoaded", function () {
   link.href = url;
   link.innerText = url;
 });
+
+document.getElementById("fetchAndSave").addEventListener("click", async () => {
+  const url = document.getElementById("init").href;
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text(); // Get raw HTML, XML, etc.
+
+    // Send the content to your local server
+    const submitRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        field: 99, // We'll treat 99 as "test1.json" on the server
+        json: text
+      })
+    });
+
+    if (submitRes.ok) {
+      alert("Fetched and saved as test1.json!");
+    } else {
+      const errorText = await submitRes.text();
+      alert("Server error: " + errorText);
+    }
+  } catch (err) {
+    alert("Fetch failed: " + err.message);
+  }
+});
