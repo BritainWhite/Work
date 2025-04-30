@@ -1,17 +1,15 @@
 document.getElementById("jsonForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const f1 = document.getElementById("field1").value.trim();
-  const f2 = document.getElementById("field2").value.trim();
-  const f3 = document.getElementById("field3").value.trim();
-
-  const filledFields = [f1, f2, f3].filter(f => f !== "");
+  const fields = Array.from({ length: 9 }, (_, i) => document.getElementById(`field${i + 1}`).value.trim());
+  
+  const filledFields = fields.filter(f => f !== "");
   if (filledFields.length !== 1) {
     document.getElementById("status").innerText = "Please fill exactly ONE field.";
     return;
   }
-
-  let fieldNumber = [f1, f2, f3].findIndex(f => f !== "") + 1;
+  
+  let fieldNumber = fields.findIndex(f => f !== "") + 1;
   let response;
 
   try {
