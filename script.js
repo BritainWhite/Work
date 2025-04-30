@@ -36,3 +36,23 @@ document.getElementById("jsonForm").addEventListener("submit", async function (e
     document.getElementById("status").innerText = `Server error: ${error}`;
   }
 });
+
+(function updateInitLink() {
+  const now = new Date();
+  const currentHour = now.getHours();
+
+  if (currentHour === 0 || currentHour < 6) {
+    now.setDate(now.getDate() - 1);
+  }
+
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+
+  const formattedDate = `${yyyy}/${mm}/${dd}`;
+  const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
+
+  const link = document.getElementById("init");
+  link.href = url;
+  link.innerText = url;
+})();
