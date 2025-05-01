@@ -1,38 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JSON Submitter</title>
   <style>
-    body { font-family: sans-serif; padding: 1em; }
-    .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 1em; }
-    .tab { padding: 0.5em 1em; cursor: pointer; border: 1px solid #ccc; border-bottom: none; background: #eee; }
-    .tab.active { background: white; font-weight: bold; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    textarea { width: 100%; height: 100px; margin-top: 1em; }
-    button { margin-top: 1em; padding: 0.5em 1em; font-size: 1em; }
-    #jsonViewer { margin-top: 1em; border: 1px solid #ccc; padding: 0.5em; background: #f8f8f8; font-family: monospace; max-height: 400px; overflow: auto; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      background: #333;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.8em;
+      text-align: center;
+      background: #444;
+      color: white;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab.active {
+      background: #fff;
+      color: #333;
+      border-bottom: 3px solid #007bff;
+    }
+
+    .content {
+      padding: 1em;
+      display: none;
+    }
+
+    .content.active {
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 1em;
+      font-family: monospace;
+      padding: 0.5em;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.7em 1.2em;
+      font-size: 1em;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #jsonViewer, #jsonSummary {
+      margin-top: 1em;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 1em;
+      overflow-x: auto;
+      font-family: monospace;
+      white-space: pre;
+    }
+
+    @media (max-width: 600px) {
+      .tabs {
+        flex-direction: column;
+      }
+
+      .tab {
+        border-bottom: none;
+        border-right: 3px solid transparent;
+      }
+
+      .tab.active {
+        border-right: 3px solid #007bff;
+      }
+    }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/json-viewer-js@latest/json-viewer.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/json-viewer-js@latest/json-viewer.css" rel="stylesheet" />
 </head>
 <body>
   <div class="tabs">
-    <div class="tab active" data-tab="initTab">Init</div>
-    <div class="tab" data-tab="trailersTab">Trailers</div>
+    <div class="tab active" onclick="switchTab('initTab')">Init</div>
+    <div class="tab" onclick="switchTab('trailerTab')">Trailers</div>
   </div>
 
-  <div id="initTab" class="tab-content active">
-    <label for="customDate">Optional custom date (yyyy/mm/dd):</label>
-    <input type="text" id="customDate" placeholder="e.g. 2025/04/30">
-    <p><a id="init" href="#">Init URL</a></p>
+  <div id="initTab" class="content active">
+    <label for="customDate">Custom Date (yyyy/mm/dd):</label>
+    <input type="text" id="customDate" style="width:100%; margin-top: 0.5em;">
+
+    <p><a id="init" href="#" target="_blank"></a></p>
+
     <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
-    <button id="submitInit">Submit Init</button>
+    <button onclick="submitField(1)">Submit Init</button>
     <div id="jsonViewer"></div>
   </div>
 
-  <div id="trailersTab" class="tab-content">
+  <div id="trailerTab" class="content">
     <textarea id="field2" placeholder="Paste JSON for trailer1.json"></textarea>
     <textarea id="field3" placeholder="Paste JSON for trailer2.json"></textarea>
     <textarea id="field4" placeholder="Paste JSON for trailer3.json"></textarea>
@@ -41,86 +114,69 @@
     <textarea id="field7" placeholder="Paste JSON for trailer6.json"></textarea>
     <textarea id="field8" placeholder="Paste JSON for trailer7.json"></textarea>
     <textarea id="field9" placeholder="Paste JSON for trailer8.json"></textarea>
-    <button id="submitTrailers">Submit Trailers</button>
+    <button onclick="submitTrailers()">Submit Trailers</button>
+    <div id="jsonSummary"></div>
   </div>
 
   <script>
-    // Tab logic
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    async function submitField(fieldNumber) {
+      const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
+      if (!fieldValue) return;
+
+      const response = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field: fieldNumber, json: fieldValue })
       });
-    });
+
+      if (response.ok && fieldNumber === 1) {
+        const trailerJson = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
+          headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const data = await trailerJson.json();
+        const pretty = JSON.stringify(data, null, 2);
+        document.getElementById("jsonViewer").textContent = pretty;
+        document.getElementById("jsonSummary").textContent = pretty;
+      }
+    }
+
+    async function submitTrailers() {
+      for (let i = 2; i <= 9; i++) {
+        const val = document.getElementById(`field${i}`).value.trim();
+        if (val) {
+          await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ field: i, json: val })
+          });
+        }
+      }
+      alert("Trailers submitted.");
+    }
 
     function updateInitLink() {
-      const customInput = document.getElementById("customDate");
+      const input = document.getElementById("customDate").value.trim();
+      const valid = /^\d{4}\/\d{2}\/\d{2}$/.test(input);
+      const now = new Date();
+      if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+      const fallback = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      const date = valid ? input : fallback;
+
       const link = document.getElementById("init");
-      let formattedDate;
-
-      const inputValue = customInput.value.trim();
-      const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
-
-      if (inputValue && validFormat.test(inputValue)) {
-        formattedDate = inputValue;
-      } else {
-        const now = new Date();
-        if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        formattedDate = `${yyyy}/${mm}/${dd}`;
-      }
-
-      const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
+      const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${date}`;
       link.href = url;
       link.innerText = url;
     }
 
     document.getElementById("customDate").addEventListener("input", updateInitLink);
     updateInitLink();
-
-    document.getElementById("submitInit").addEventListener("click", async () => {
-      const jsonText = document.getElementById("field1").value.trim();
-      if (!jsonText) return alert("Please enter JSON in the Init field.");
-
-      const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ field: 1, json: jsonText })
-      });
-
-      if (res.ok) {
-        alert("Init submitted and trailers.json generated.");
-        const trailerRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailers.json", {
-          headers: { "ngrok-skip-browser-warning": "true" }
-        });
-        const data = await trailerRes.json();
-
-        const viewer = new JSONViewer();
-        document.getElementById("jsonViewer").innerHTML = "";
-        document.getElementById("jsonViewer").appendChild(viewer.getContainer());
-        viewer.showJSON(data, null, 2);
-      } else {
-        alert("Failed to submit Init JSON.");
-      }
-    });
-
-    document.getElementById("submitTrailers").addEventListener("click", async () => {
-      for (let i = 2; i <= 9; i++) {
-        const text = document.getElementById(`field${i}`).value.trim();
-        if (text) {
-          await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ field: i, json: text })
-          });
-        }
-      }
-      alert("Trailer files submitted.");
-    });
   </script>
 </body>
 </html>
