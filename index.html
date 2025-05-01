@@ -220,11 +220,13 @@
     async function submitAttendance() {
       const text = document.getElementById("attendanceText").value.trim();
       if (!text) return;
+    
       await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit-attendance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
+        headers: { "Content-Type": "text/plain" },
+        body: text
       });
+    
       alert("Attendance submitted.");
     }
 
