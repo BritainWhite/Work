@@ -1,11 +1,9 @@
 async function generateTrailerLinks() {
   const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids", {
-    headers: {
-      "ngrok-skip-browser-warning": "true"
-    }
+    headers: { "ngrok-skip-browser-warning": "true" }
   });
-  const { business_date, trailer_transLoadId_list } = await res.json();
 
+  const { business_date, trailer_transLoadId_list } = await res.json();
   if (!business_date || !Array.isArray(trailer_transLoadId_list)) return;
 
   const container = document.getElementById("trailerLinks");
@@ -25,100 +23,65 @@ async function generateTrailerLinks() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const customInput = document.getElementById("customDate");
+function switchTab(tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+async function submitField(fieldNumber) {
+  const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
+  if (!fieldValue) return;
+
+  const response = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ field: fieldNumber, json: fieldValue })
+  });
+
+  if (response.ok && fieldNumber === 1) {
+    const trailerJson = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
+      headers: { "ngrok-skip-browser-warning": "true" }
+    });
+    const data = await trailerJson.json();
+    const pretty = JSON.stringify(data, null, 2);
+    document.getElementById("jsonViewer").textContent = pretty;
+    document.getElementById("jsonSummary").textContent = pretty;
+    await generateTrailerLinks(); // Refresh trailer links after init submission
+  }
+}
+
+async function submitTrailers() {
+  for (let i = 2; i <= 9; i++) {
+    const val = document.getElementById(`field${i}`).value.trim();
+    if (val) {
+      await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field: i, json: val })
+      });
+    }
+  }
+  alert("Trailers submitted.");
+}
+
+function updateInitLink() {
+  const input = document.getElementById("customDate").value.trim();
+  const valid = /^\d{4}\/\d{2}\/\d{2}$/.test(input);
+  const now = new Date();
+  if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+  const fallback = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+  const date = valid ? input : fallback;
+
   const link = document.getElementById("init");
+  const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${date}`;
+  link.href = url;
+  link.innerText = url;
+}
 
-  function updateLink() {
-    let formattedDate;
-
-    const inputValue = customInput.value.trim();
-    const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
-
-    if (inputValue && validFormat.test(inputValue)) {
-      formattedDate = inputValue;
-    } else {
-      const now = new Date();
-      if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, "0");
-      const dd = String(now.getDate()).padStart(2, "0");
-
-      formattedDate = `${yyyy}/${mm}/${dd}`;
-    }
-
-    const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
-    link.href = url;
-    link.innerText = url;
-  }
-
-  updateLink();
-  customInput.addEventListener("input", updateLink);
-
-  await generateTrailerLinks();
-});
-
-document.getElementById("jsonForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const fields = Array.from({ length: 9 }, (_, i) => document.getElementById(`field${i + 1}`).value.trim());
-  const filledFields = fields.filter(f => f !== "");
-
-  if (filledFields.length !== 1) {
-    document.getElementById("status").innerText = "Please fill exactly ONE field.";
-    return;
-  }
-
-  const fieldNumber = fields.findIndex(f => f !== "") + 1;
-
-  try {
-    const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        field: fieldNumber,
-        json: filledFields[0]
-      })
-    });
-
-    if (res.ok) {
-      document.getElementById("status").innerText = "Submitted successfully!";
-      document.getElementById("jsonForm").reset();
-
-      if (fieldNumber === 1) {
-        await generateTrailerLinks(); // Refresh only when init.json is submitted
-      }
-    } else {
-      const errorText = await res.text();
-      document.getElementById("status").innerText = `Server error: ${errorText}`;
-    }
-  } catch (err) {
-    document.getElementById("status").innerText = "Error: Could not reach server.";
-  }
-});
-
-document.getElementById("fetchAndSave").addEventListener("click", async () => {
-  const url = document.getElementById("init").href;
-
-  try {
-    const response = await fetch(url);
-    const text = await response.text();
-
-    const submitRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ field: 99, json: text })
-    });
-
-    if (submitRes.ok) {
-      alert("Fetched and saved as test1.json!");
-      await generateTrailerLinks();
-    } else {
-      const errorText = await submitRes.text();
-      alert("Server error: " + errorText);
-    }
-  } catch (err) {
-    alert("Fetch failed: " + err.message);
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  updateInitLink();
+  document.getElementById("customDate").addEventListener("input", updateInitLink);
+  generateTrailerLinks();
 });
