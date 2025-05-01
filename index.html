@@ -1,28 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Submit JSON</title>
+  <meta charset="UTF-8" />
+  <title>JSON Submitter</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 1em; }
-    textarea { width: 100%; height: 100px; margin-bottom: 1em; }
-    button { padding: 0.5em 1em; font-size: 1em; }
-    #status { margin-top: 1em; font-weight: bold; }
-    #trailerLinks p { margin: 0.5em 0; }
+    body { font-family: sans-serif; padding: 1em; }
+    .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 1em; }
+    .tab { padding: 0.5em 1em; cursor: pointer; border: 1px solid #ccc; border-bottom: none; background: #eee; }
+    .tab.active { background: white; font-weight: bold; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    textarea { width: 100%; height: 100px; margin-top: 1em; }
+    button { margin-top: 1em; padding: 0.5em 1em; font-size: 1em; }
+    #jsonViewer { margin-top: 1em; border: 1px solid #ccc; padding: 0.5em; background: #f8f8f8; font-family: monospace; max-height: 400px; overflow: auto; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/json-viewer-js@latest/json-viewer.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/json-viewer-js@latest/json-viewer.css" rel="stylesheet" />
 </head>
 <body>
-  <h1>Submit JSON</h1>
-  <form id="jsonForm">
+  <div class="tabs">
+    <div class="tab active" data-tab="initTab">Init</div>
+    <div class="tab" data-tab="trailersTab">Trailers</div>
+  </div>
+
+  <div id="initTab" class="tab-content active">
     <label for="customDate">Optional custom date (yyyy/mm/dd):</label>
     <input type="text" id="customDate" placeholder="e.g. 2025/04/30">
-    
-    <p><a id="init" href="#">Init Link</a></p>
-
-    <div id="trailerLinks" href="#"></div>
-
-    <button id="fetchAndSave">Fetch and Save Page</button>
-    
+    <p><a id="init" href="#">Init URL</a></p>
     <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
+    <button id="submitInit">Submit Init</button>
+    <div id="jsonViewer"></div>
+  </div>
+
+  <div id="trailersTab" class="tab-content">
     <textarea id="field2" placeholder="Paste JSON for trailer1.json"></textarea>
     <textarea id="field3" placeholder="Paste JSON for trailer2.json"></textarea>
     <textarea id="field4" placeholder="Paste JSON for trailer3.json"></textarea>
@@ -31,11 +41,86 @@
     <textarea id="field7" placeholder="Paste JSON for trailer6.json"></textarea>
     <textarea id="field8" placeholder="Paste JSON for trailer7.json"></textarea>
     <textarea id="field9" placeholder="Paste JSON for trailer8.json"></textarea>
-    
-    <button type="submit">Submit</button>
-  </form>
-  <div id="status"></div>
+    <button id="submitTrailers">Submit Trailers</button>
+  </div>
 
-  <script src="script.js"></script>
+  <script>
+    // Tab logic
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    function updateInitLink() {
+      const customInput = document.getElementById("customDate");
+      const link = document.getElementById("init");
+      let formattedDate;
+
+      const inputValue = customInput.value.trim();
+      const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
+
+      if (inputValue && validFormat.test(inputValue)) {
+        formattedDate = inputValue;
+      } else {
+        const now = new Date();
+        if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        formattedDate = `${yyyy}/${mm}/${dd}`;
+      }
+
+      const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
+      link.href = url;
+      link.innerText = url;
+    }
+
+    document.getElementById("customDate").addEventListener("input", updateInitLink);
+    updateInitLink();
+
+    document.getElementById("submitInit").addEventListener("click", async () => {
+      const jsonText = document.getElementById("field1").value.trim();
+      if (!jsonText) return alert("Please enter JSON in the Init field.");
+
+      const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field: 1, json: jsonText })
+      });
+
+      if (res.ok) {
+        alert("Init submitted and trailers.json generated.");
+        const trailerRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailers.json", {
+          headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const data = await trailerRes.json();
+
+        const viewer = new JSONViewer();
+        document.getElementById("jsonViewer").innerHTML = "";
+        document.getElementById("jsonViewer").appendChild(viewer.getContainer());
+        viewer.showJSON(data, null, 2);
+      } else {
+        alert("Failed to submit Init JSON.");
+      }
+    });
+
+    document.getElementById("submitTrailers").addEventListener("click", async () => {
+      for (let i = 2; i <= 9; i++) {
+        const text = document.getElementById(`field${i}`).value.trim();
+        if (text) {
+          await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ field: i, json: text })
+          });
+        }
+      }
+      alert("Trailer files submitted.");
+    });
+  </script>
 </body>
 </html>
