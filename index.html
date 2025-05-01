@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JSON Submitter</title>
   <style>
     body {
@@ -45,9 +45,10 @@
     .refresh-btn {
       background: none;
       border: none;
-      padding: 0.5em;
       cursor: pointer;
+      padding: 0.5em;
     }
+
     .refresh-btn img {
       width: 24px;
       height: 24px;
@@ -92,6 +93,13 @@
       white-space: pre;
     }
 
+    #iframePanel {
+      display: none;
+      margin-top: 1em;
+      height: 500px;
+      border: 1px solid #ccc;
+    }
+
     @media (max-width: 600px) {
       .tabs {
         flex-direction: column;
@@ -115,7 +123,7 @@
       <div class="tab" onclick="switchTab('trailerTab')">Trailers</div>
     </div>
     <button class="refresh-btn" onclick="location.reload()">
-      <img src="https://cdn-icons-png.flaticon.com/512/61/61225.png" alt="Refresh" style="width: 20px; height: 20px;">
+      <img src="https://cdn-icons-png.flaticon.com/512/61/61225.png" alt="Refresh">
     </button>
   </div>
 
@@ -123,7 +131,14 @@
     <label for="customDate">Custom Date (yyyy/mm/dd):</label>
     <input type="text" id="customDate" style="width:100%; margin-top: 0.5em;">
 
-    <p><a id="init" href="#" target="_blank"></a></p>
+    <p>
+      <a id="init" href="#" target="_blank"></a>
+      <button onclick="loadIframe()">Load in Page</button>
+    </p>
+
+    <div id="iframePanel">
+      <iframe id="previewIframe" src="" width="100%" height="100%" sandbox="allow-same-origin allow-scripts"></iframe>
+    </div>
 
     <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
     <button onclick="submitField(1)">Submit Init</button>
@@ -149,6 +164,14 @@
       document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
       document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
       document.getElementById(tabId).classList.add('active');
+    }
+
+    function loadIframe() {
+      const initUrl = document.getElementById("init").href;
+      const iframe = document.getElementById("previewIframe");
+      const panel = document.getElementById("iframePanel");
+      iframe.src = initUrl;
+      panel.style.display = "block";
     }
 
     async function submitField(fieldNumber) {
