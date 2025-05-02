@@ -22,24 +22,25 @@
 
     .tabs {
       display: flex;
-      flex-wrap: nowrap;
       overflow-x: auto;
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none;  /* IE/Edge */
+      overflow-y: hidden;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
     
     .tabs::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
+      display: none;
     }
     
     .tab {
       flex: 0 0 auto;
-      padding: 0.8em 1.2em;
-      text-align: center;
+      padding: 0.7em 1.5em;
       color: white;
       cursor: pointer;
       white-space: nowrap;
       border-bottom: 3px solid transparent;
+      background-color: #444;
     }
     
     .tab.active {
@@ -47,6 +48,7 @@
       color: #333;
       border-bottom: 3px solid #007bff;
     }
+
 
     .refresh-btn {
       background: none;
