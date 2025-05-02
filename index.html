@@ -114,7 +114,36 @@
       height: 100%;
       border: none;
     }
-  </style>
+  
+    .subtabs {
+      display: flex;
+      gap: 0.5em;
+      background: #f0f0f0;
+      padding: 0.5em;
+      overflow-x: auto;
+    }
+
+    .subtab {
+      padding: 0.5em 1em;
+      border: none;
+      background: #ccc;
+      cursor: pointer;
+    }
+
+    .subtab.active {
+      background: #007bff;
+      color: white;
+    }
+
+    .subtab-content {
+      display: none;
+    }
+
+    .subtab-content.active {
+      display: block;
+    }
+    </style>
+
 </head>
 <body>
   <div class="top-bar">
@@ -128,37 +157,17 @@
     </button>
   </div>
 
-  <div id="initTab" class="content active">
-    <div class="sub-tabs" style="display: flex; overflow-x: auto; margin-bottom: 1em;">
-      <button class="sub-tab" onclick="switchSubTab('yesterday')">Yesterday</button>
-      <button class="sub-tab active" onclick="switchSubTab('today')">Today</button>
-      <button class="sub-tab" onclick="switchSubTab('tomorrow')">Tomorrow</button>
-    </div>
-    <div id="yesterdayContent" class="init-sub-tab" style="display: none;">
-      <label for="customDateYesterday">Date (yyyy/mm/dd):</label>
-      <input type="text" id="customDateYesterday" />
-      <button onclick="loadIframe('yesterday')">Load in Page</button>
-      <div class="iframe-container"><iframe id="iframeYesterday"></iframe></div>
-      <textarea id="field98" placeholder="Paste JSON for yesterday.json"></textarea>
-      <button onclick="submitField(98)">Submit Yesterday</button>
-    </div>
-    <div id="todayContent" class="init-sub-tab" style="display: block;">
-      <label for="customDate">Date (yyyy/mm/dd):</label>
-      <input type="text" id="customDate" />
-      <button onclick="loadIframe('today')">Load in Page</button>
-      <div class="iframe-container"><iframe id="previewIframe"></iframe></div>
-      <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
-      <button onclick="submitField(1)">Submit Init</button>
-      <div id="jsonViewer"></div>
-    </div>
-    <div id="tomorrowContent" class="init-sub-tab" style="display: none;">
-      <label for="customDateTomorrow">Date (yyyy/mm/dd):</label>
-      <input type="text" id="customDateTomorrow" />
-      <button onclick="loadIframe('tomorrow')">Load in Page</button>
-      <div class="iframe-container"><iframe id="iframeTomorrow"></iframe></div>
-      <textarea id="field100" placeholder="Paste JSON for tomorrow.json"></textarea>
-      <button onclick="submitField(100)">Submit Tomorrow</button>
-    </div>
+  
+<div id="initTab" class="content active">
+  <div class="subtabs">
+    <button class="subtab active" onclick="switchSubTab('yesterday')">Yesterday</button>
+    <button class="subtab" onclick="switchSubTab('today')">Today</button>
+    <button class="subtab" onclick="switchSubTab('tomorrow')">Tomorrow</button>
+  </div>
+  <div id="yesterday" class="subtab-content active"></div>
+  <div id="today" class="subtab-content"></div>
+  <div id="tomorrow" class="subtab-content"></div>
+
     <label for="customDate">Custom Date (yyyy/mm/dd):</label>
     <input type="text" id="customDate" style="width:100%; margin-top: 0.5em;">
     <p>
