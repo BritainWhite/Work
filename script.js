@@ -64,42 +64,32 @@ async function submitField(fieldNumber) {
   if (!fieldValue) return;
 
   const activeDay = document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
+  const isToday = activeDay === "today";
+  const endpoint = isToday ? "submit" : "submit-alt";
+  const body = isToday
+    ? { field: fieldNumber, json: fieldValue }
+    : {
+        file: activeDay === "yesterday" ? "yesterday.json" : "tomorrow.json",
+        json: fieldValue
+      };
 
-  if (activeDay === "today") {
-    const response = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ field: fieldNumber, json: fieldValue })
+  const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  if (response.ok) {
+    const trailerJson = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
+      headers: { "ngrok-skip-browser-warning": "true" }
     });
-
-    if (response.ok) {
-      const trailerJson = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
-        headers: { "ngrok-skip-browser-warning": "true" }
-      });
-      const data = await trailerJson.json();
-      const pretty = JSON.stringify(data, null, 2);
-      document.getElementById("jsonViewer").textContent = pretty;
-      document.getElementById("jsonSummary").textContent = pretty;
-    }
-  } else {
-    const file = activeDay === "yesterday" ? "yesterday.json" : "tomorrow.json";
-    const response = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit-alt", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ file, json: fieldValue })
-    });
-
-    if (response.ok) {
-      const trailerJson = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
-        headers: { "ngrok-skip-browser-warning": "true" }
-      });
-      const data = await trailerJson.json();
-      const pretty = JSON.stringify(data, null, 2);
-      document.getElementById("jsonViewer").textContent = pretty;
-      document.getElementById("jsonSummary").textContent = pretty;
-    }
+    const data = await trailerJson.json();
+    const pretty = JSON.stringify(data, null, 2);
+    document.getElementById("jsonViewer").textContent = pretty;
+    document.getElementById("jsonSummary").textContent = pretty;
   }
 }
+
 
 async function submitTrailers() {
   for (let i = 2; i <= 9; i++) {
