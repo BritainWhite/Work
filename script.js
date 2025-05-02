@@ -64,17 +64,13 @@ async function submitField(fieldNumber) {
   if (!fieldValue) return;
 
   const activeDay = document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
-  const endpoint = activeDay === "today" ? "submit" : "submit-alt";
+  const endpoint = "submit-alt"; // Always use submit-alt for consistency
   const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "init.json";
-
-  const payload = activeDay === "today"
-    ? { field: fieldNumber, json: fieldValue } // ✅ expects numeric field
-    : { file, json: fieldValue };              // ✅ expects file name
 
   const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ file, json: fieldValue })
   });
 
   if (response.ok) {
@@ -86,8 +82,8 @@ async function submitField(fieldNumber) {
     document.getElementById("jsonViewer").textContent = pretty;
     document.getElementById("jsonSummary").textContent = pretty;
   } else {
-    const text = await response.text();
-    alert("Error: " + text);
+    const errorText = await response.text();
+    alert(`Server error: ${errorText}`);
   }
 }
 
