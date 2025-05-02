@@ -54,21 +54,28 @@ window.addEventListener("DOMContentLoaded", async () => {
     link.innerText = url;
   }
 
+  function loadIframe() {
+    const iframe = document.getElementById("previewIframe");
+    iframe.src = document.getElementById("init").href;
+  }
+
+  // Attach event listeners to update the iframe after changes
   customInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       updateLink();
-      loadIframe();
-    }, 600); // 600ms debounce delay
+      loadIframe(); // Ensures iframe reloads after typing
+    }, 600);
   });
 
   customInput.addEventListener("blur", () => {
     clearTimeout(debounceTimer);
     updateLink();
-    loadIframe();
+    loadIframe(); // Ensures iframe reloads when input loses focus
   });
 
   updateLink();
+  loadIframe();  // Initial iframe load
   await generateTrailerLinks();
 });
 
