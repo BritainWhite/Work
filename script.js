@@ -25,57 +25,59 @@ async function generateTrailerLinks() {
   });
 }
 
+function updateLink() {
+  const customInput = document.getElementById("customDate");
+  let formattedDate;
+
+  const inputValue = customInput.value.trim();
+  const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
+
+  if (inputValue && validFormat.test(inputValue)) {
+    formattedDate = inputValue;
+  } else {
+    const now = new Date();
+    if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    formattedDate = `${yyyy}/${mm}/${dd}`;
+  }
+
+  const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
+  const link = document.getElementById("init");
+  link.href = url;
+  link.innerText = url;
+}
+
+function updateSubmitButton(day) {
+  const submitBtn = document.querySelector('#initTab button[onclick^="submitField"]');
+  if (submitBtn) {
+    submitBtn.textContent = `Submit ${day.charAt(0).toUpperCase() + day.slice(1)}`;
+  }
+}
+
+function updateDateByDay(dayType) {
+  const customInput = document.getElementById("customDate");
+  const today = new Date();
+  if (today.getHours() < 6) today.setDate(today.getDate() - 1);
+  const offset = dayType === 'yesterday' ? -1 : dayType === 'tomorrow' ? 1 : 0;
+  today.setDate(today.getDate() + offset);
+  const formatted = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+  customInput.value = formatted;
+  updateLink();
+  loadIframe();
+}
+
+function selectDayTab(day) {
+  document.querySelectorAll('.subtab').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.subtab[onclick*="${day}"]`).classList.add('active');
+  updateDateByDay(day);
+  updateSubmitButton(day);
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   const customInput = document.getElementById("customDate");
   let debounceTimer;
-
-  function updateLink() {
-    let formattedDate;
-
-    const inputValue = customInput.value.trim();
-    const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
-
-    if (inputValue && validFormat.test(inputValue)) {
-      formattedDate = inputValue;
-    } else {
-      const now = new Date();
-      if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, "0");
-      const dd = String(now.getDate()).padStart(2, "0");
-      formattedDate = `${yyyy}/${mm}/${dd}`;
-    }
-
-    const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
-    const link = document.getElementById("init");
-    link.href = url;
-    link.innerText = url;
-  }
-
-  function updateSubmitButton(day) {
-    const submitBtn = document.querySelector('#initTab button[onclick^="submitField"]');
-    if (submitBtn) {
-      submitBtn.textContent = `Submit ${day.charAt(0).toUpperCase() + day.slice(1)}`;
-    }
-  }
-
-  function updateDateByDay(dayType) {
-    const today = new Date();
-    if (today.getHours() < 6) today.setDate(today.getDate() - 1);
-    const offset = dayType === 'yesterday' ? -1 : dayType === 'tomorrow' ? 1 : 0;
-    today.setDate(today.getDate() + offset);
-    const formatted = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
-    customInput.value = formatted;
-    updateLink();
-    loadIframe();
-  }
-
-  function selectDayTab(day) {
-    document.querySelectorAll('.subtab').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.subtab[onclick*="${day}"]`).classList.add('active');
-    updateDateByDay(day);
-    updateSubmitButton(day);
-  }
 
   // Debounced input listener
   customInput.addEventListener("input", () => {
