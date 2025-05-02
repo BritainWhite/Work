@@ -27,13 +27,13 @@
       white-space: nowrap;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
-      max-width: calc(100% - 40px); /* Prevent overflow near the refresh icon */
+      max-width: calc(100% - 40px);
     }
-    
+
     .tabs::-webkit-scrollbar {
       display: none;
     }
-    
+
     .tab {
       flex: 0 0 auto;
       padding: 0.7em 1em;
@@ -45,14 +45,12 @@
       border-bottom: 3px solid transparent;
       background-color: #444;
     }
-    
+
     .tab.active {
       background: #fff;
       color: #333;
       border-bottom: 3px solid #007bff;
     }
-
-
 
     .refresh-btn {
       background: none;
@@ -116,21 +114,6 @@
       height: 100%;
       border: none;
     }
-
-    @media (max-width: 600px) {
-      .tabs {
-        flex-direction: column;
-      }
-
-      .tab {
-        border-bottom: none;
-        border-right: 3px solid transparent;
-      }
-
-      .tab.active {
-        border-right: 3px solid #007bff;
-      }
-    }
   </style>
 </head>
 <body>
@@ -155,7 +138,6 @@
     <div class="iframe-container">
       <iframe id="previewIframe" src=""></iframe>
     </div>
-    <textarea id="iframeDebug" placeholder="Iframe debug output will appear here..." readonly></textarea>
     <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
     <button onclick="submitField(1)">Submit Init</button>
     <div id="jsonViewer"></div>
@@ -192,28 +174,7 @@
 
     function loadIframe() {
       const initUrl = document.getElementById("init").href;
-      const iframe = document.getElementById("previewIframe");
-      const debugBox = document.getElementById("iframeDebug");
-
-      iframe.src = initUrl;
-      debugBox.value = "Loading...";
-
-      iframe.onload = () => {
-        let debugText = "";
-
-        try {
-          const doc = iframe.contentDocument || iframe.contentWindow.document;
-          debugText += `Title: ${doc.title}\n`;
-          debugText += `URL: ${iframe.contentWindow.location.href}\n\n`;
-
-          const bodyText = doc.body?.innerText || "(No body text)";
-          debugText += "--- Body Text ---\n" + bodyText.slice(0, 2000);
-        } catch (err) {
-          debugText = "⚠️ Could not access iframe contents.\n\n" + err.message;
-        }
-
-        debugBox.value = debugText;
-      };
+      document.getElementById("previewIframe").src = initUrl;
     }
 
     async function submitField(fieldNumber) {
@@ -254,13 +215,11 @@
     async function submitAttendance() {
       const text = document.getElementById("attendanceText").value.trim();
       if (!text) return;
-
       await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit-attendance", {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: text
       });
-
       alert("Attendance submitted.");
     }
 
