@@ -35,7 +35,11 @@ async function submitField(fieldNumber) {
   const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ file, json: fieldValue })
+    body: JSON.stringify(
+      endpoint === "submit"
+        ? { field: fieldNumber, json: fieldValue }
+        : { file, json: fieldValue }
+    )    
   });
 
   if (response.ok) {
