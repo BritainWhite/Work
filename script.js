@@ -55,10 +55,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     setTimeout(() => iframe.src = url, 50);
   }
 
-  customInput.addEventListener("blur", () => {
+  customInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
-    updateAndLoadIframe();
+    debounceTimer = setTimeout(updateAndLoadIframe, 600);
   });
+
+  // customInput.addEventListener("blur", () => {
+  //   clearTimeout(debounceTimer);
+  //   updateAndLoadIframe();
+  // });
 
   // Initial load
   updateAndLoadIframe();
