@@ -86,8 +86,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     }, 600);
   });
 
-  selectDayTab("today");  // Set default subtab
+  selectDayTab("today");               // sets subtab, input, and init link
+  updateInitLink();                    // ensures URL is updated
+  loadIframe();                        // ✅ FIX: load the iframe immediately
   await generateTrailerLinks();
+
+  document.getElementById("customDate").addEventListener("input", updateInitLink);
 });
 
 async function submitField(fieldNumber) {
