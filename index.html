@@ -120,7 +120,7 @@
     <iframe id="previewIframe" src=""></iframe>
   </div>
   <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
-  <button onclick="submitField(1)">Submit Init</button>
+  <button id="submitInitBtn" onclick="submitInit()">Submit Today</button>
   <div id="jsonViewer"></div>
 </div>
 
@@ -158,7 +158,8 @@ function selectDayTab(day) {
     document.getElementById(`${d}Tab`).classList.remove('active');
   });
   document.getElementById(`${day}Tab`).classList.add('active');
-  updateDateByDay(day);
+  updateSubmitLabel(day);
+      updateDateByDay(day);
 }
 function updateDateByDay(dayType) {
   const today = new Date();
@@ -182,7 +183,48 @@ function loadIframe() {
   const initUrl = document.getElementById("init").href;
   document.getElementById("previewIframe").src = initUrl;
 }
-updateDateByDay('today');
+
+    function submitInit() {
+      const fieldValue = document.getElementById("field1").value.trim();
+      if (!fieldValue) return;
+
+      let activeDay = document.querySelector('.sub-tabs .active').id.replace("Tab", "");
+      const fieldMap = {
+        yesterday: "yesterday",
+        today: "1",
+        tomorrow: "tomorrow"
+      };
+      const field = fieldMap[activeDay];
+
+      fetch("https://valid-grossly-gibbon.ngrok-free.app/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field, json: fieldValue })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        if (activeDay === "today") {
+          fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
+            headers: { "ngrok-skip-browser-warning": "true" }
+          })
+          .then(r => r.json())
+          .then(data => {
+            const pretty = JSON.stringify(data, null, 2);
+            document.getElementById("jsonViewer").textContent = pretty;
+            document.getElementById("jsonSummary").textContent = pretty;
+          });
+        }
+      })
+      .catch(err => alert("Error: " + err.message));
+    }
+
+    function updateSubmitLabel(day) {
+      const btn = document.getElementById("submitInitBtn");
+      btn.textContent = "Submit " + day.charAt(0).toUpperCase() + day.slice(1);
+    }
+
+  updateDateByDay('today');
 </script>
 </body>
 </html>
