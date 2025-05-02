@@ -55,11 +55,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     setTimeout(() => iframe.src = url, 50);
   }
 
-  customInput.addEventListener("input", () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(updateAndLoadIframe, 600);
-  });
-
   customInput.addEventListener("blur", () => {
     clearTimeout(debounceTimer);
     updateAndLoadIframe();
