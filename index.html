@@ -22,20 +22,26 @@
 
     .tabs {
       display: flex;
-      flex-wrap: wrap;
-      background: #444;
-      flex-grow: 1;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none;  /* IE/Edge */
     }
-
+    
+    .tabs::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+    
     .tab {
-      flex: 1;
-      padding: 0.8em;
+      flex: 0 0 auto;
+      padding: 0.8em 1.2em;
       text-align: center;
       color: white;
       cursor: pointer;
+      white-space: nowrap;
       border-bottom: 3px solid transparent;
     }
-
+    
     .tab.active {
       background: #fff;
       color: #333;
