@@ -219,7 +219,7 @@
 
     function selectDayTab(day) {
       document.querySelectorAll('.subtab').forEach(btn => btn.classList.remove('active'));
-      document.querySelector(`.subtab[onclick*="${day}"]`).classList.add('active');
+      document.querySelector(`.subtab[data-day="${day}"]`).classList.add('active');
       updateDateByDay(day);
       updateSubmitButton(day);
     }
@@ -250,7 +250,9 @@
       const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
       if (!fieldValue) return;
 
-      const activeDay = document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
+      const activeSubtab = document.querySelector(".subtab.active");
+      const activeDay = activeSubtab?.dataset.day || "today";
+
       const endpoint = activeDay === "today" ? "submit" : "submit-alt";
       const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "init.json";
 
@@ -268,6 +270,9 @@
         const pretty = JSON.stringify(data, null, 2);
         document.getElementById("jsonViewer").textContent = pretty;
         document.getElementById("jsonSummary").textContent = pretty;
+      } else {
+        const errorText = await response.text();
+        alert("Error: " + errorText);
       }
     }
 
