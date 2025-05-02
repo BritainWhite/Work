@@ -53,9 +53,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     link.innerText = url;
   }
 
-  updateLink();
   customInput.addEventListener("input", updateLink);
 
+  // Automatically load iframe when done editing custom date
+  customInput.addEventListener("blur", () => {
+    updateLink();
+    loadIframe();
+  });
+
+  updateLink();
   await generateTrailerLinks();
 });
 
