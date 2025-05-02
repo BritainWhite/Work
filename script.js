@@ -28,6 +28,7 @@ async function generateTrailerLinks() {
 window.addEventListener("DOMContentLoaded", async () => {
   const customInput = document.getElementById("customDate");
   const link = document.getElementById("init");
+  let debounceTimer;
 
   function updateLink() {
     let formattedDate;
@@ -53,10 +54,16 @@ window.addEventListener("DOMContentLoaded", async () => {
     link.innerText = url;
   }
 
-  customInput.addEventListener("input", updateLink);
+  customInput.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      updateLink();
+      loadIframe();
+    }, 600); // 600ms debounce delay
+  });
 
-  // Automatically load iframe when done editing custom date
   customInput.addEventListener("blur", () => {
+    clearTimeout(debounceTimer);
     updateLink();
     loadIframe();
   });
