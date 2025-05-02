@@ -166,9 +166,9 @@
 
   <div id="initTab" class="content active">
     <div class="subtabs">
-      <button class="subtab" onclick="selectDayTab('yesterday')">Yesterday</button>
-      <button class="subtab active" onclick="selectDayTab('today')">Today</button>
-      <button class="subtab" onclick="selectDayTab('tomorrow')">Tomorrow</button>
+      <button class="subtab" data-day="yesterday" onclick="selectDayTab('yesterday')">Yesterday</button>
+      <button class="subtab active" data-day="today" onclick="selectDayTab('today')">Today</button>
+      <button class="subtab" data-day="tomorrow" onclick="selectDayTab('tomorrow')">Tomorrow</button>
     </div>
 
     <label for="customDate">Custom Date (yyyy/mm/dd):</label>
