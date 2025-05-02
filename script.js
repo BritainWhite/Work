@@ -77,7 +77,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     updateSubmitButton(day);
   }
 
-  // Only one of these (debounced input OR blur). We’ll keep input only:
+  // Debounced input listener
   customInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -86,12 +86,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     }, 600);
   });
 
-  selectDayTab("today");               // sets subtab, input, and init link
-  updateInitLink();                    // ensures URL is updated
-  loadIframe();                        // ✅ FIX: load the iframe immediately
+  selectDayTab("today");
   await generateTrailerLinks();
-
-  document.getElementById("customDate").addEventListener("input", updateInitLink);
 });
 
 async function submitField(fieldNumber) {
