@@ -143,6 +143,7 @@
     <div class="iframe-container">
       <iframe id="previewIframe" src=""></iframe>
     </div>
+    <textarea id="iframeDebug" placeholder="Iframe debug output will appear here..." readonly></textarea>
     <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
     <button onclick="submitField(1)">Submit Init</button>
     <div id="jsonViewer"></div>
@@ -179,7 +180,28 @@
 
     function loadIframe() {
       const initUrl = document.getElementById("init").href;
-      document.getElementById("previewIframe").src = initUrl;
+      const iframe = document.getElementById("previewIframe");
+      const debugBox = document.getElementById("iframeDebug");
+
+      iframe.src = initUrl;
+      debugBox.value = "Loading...";
+
+      iframe.onload = () => {
+        let debugText = "";
+
+        try {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          debugText += `Title: ${doc.title}\n`;
+          debugText += `URL: ${iframe.contentWindow.location.href}\n\n`;
+
+          const bodyText = doc.body?.innerText || "(No body text)";
+          debugText += "--- Body Text ---\n" + bodyText.slice(0, 2000);
+        } catch (err) {
+          debugText = "⚠️ Could not access iframe contents.\n\n" + err.message;
+        }
+
+        debugBox.value = debugText;
+      };
     }
 
     async function submitField(fieldNumber) {
@@ -220,13 +242,13 @@
     async function submitAttendance() {
       const text = document.getElementById("attendanceText").value.trim();
       if (!text) return;
-    
+
       await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit-attendance", {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: text
       });
-    
+
       alert("Attendance submitted.");
     }
 
