@@ -219,9 +219,10 @@
 
     function selectDayTab(day) {
       document.querySelectorAll('.subtab').forEach(btn => btn.classList.remove('active'));
-      document.querySelector(`.subtab[data-day="${day}"]`).classList.add('active');
+      document.querySelector(`.subtab[onclick*="${day}"]`).classList.add('active');
       updateDateByDay(day);
       updateSubmitButton(day);
+      loadIframe(); // Automatically load iframe when tab is selected
     }
 
     function updateDateByDay(dayType) {
