@@ -64,19 +64,17 @@ async function submitField(fieldNumber) {
   if (!fieldValue) return;
 
   const activeDay = document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
-  const isToday = activeDay === "today";
-  const endpoint = isToday ? "submit" : "submit-alt";
-  const body = isToday
-    ? { field: fieldNumber, json: fieldValue }
-    : {
-        file: activeDay === "yesterday" ? "yesterday.json" : "tomorrow.json",
-        json: fieldValue
-      };
+  const endpoint = activeDay === "today" ? "submit" : "submit-alt";
+  const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "init.json";
+
+  const payload = activeDay === "today"
+    ? { field: fieldNumber, json: fieldValue } // ✅ expects numeric field
+    : { file, json: fieldValue };              // ✅ expects file name
 
   const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+    body: JSON.stringify(payload)
   });
 
   if (response.ok) {
@@ -87,9 +85,11 @@ async function submitField(fieldNumber) {
     const pretty = JSON.stringify(data, null, 2);
     document.getElementById("jsonViewer").textContent = pretty;
     document.getElementById("jsonSummary").textContent = pretty;
+  } else {
+    const text = await response.text();
+    alert("Error: " + text);
   }
 }
-
 
 async function submitTrailers() {
   for (let i = 2; i <= 9; i++) {
