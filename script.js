@@ -1,4 +1,10 @@
 async function generateTrailerLinks() {
+  let container = document.getElementById("trailerLinks");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "trailerLinks";
+    document.getElementById("trailerTab").appendChild(container);
+  }
   const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids", {
     headers: { "ngrok-skip-browser-warning": "true" }
   });
@@ -6,7 +12,6 @@ async function generateTrailerLinks() {
 
   if (!business_date || !Array.isArray(trailer_transLoadId_list)) return;
 
-  const container = document.getElementById("trailerLinks");
   container.innerHTML = "";
   const formattedDate = business_date.replace(/-/g, "/");
 
@@ -65,11 +70,21 @@ async function loadAndDisplayJson() {
     });
     const data = await response.json();
     const pretty = JSON.stringify(data, null, 2);
-    const viewer = document.getElementById("jsonViewer");
-    if (viewer) viewer.textContent = pretty;
+    let viewer = document.getElementById("jsonViewer");
+    if (!viewer) {
+      viewer = document.createElement("div");
+      viewer.id = "jsonViewer";
+      document.getElementById("initTab").appendChild(viewer);
+    }
+    viewer.textContent = pretty;
   } catch (err) {
-    const viewer = document.getElementById("jsonViewer");
-    if (viewer) viewer.textContent = `Error loading ${file}`;
+    let viewer = document.getElementById("jsonViewer");
+    if (!viewer) {
+      viewer = document.createElement("div");
+      viewer.id = "jsonViewer";
+      document.getElementById("initTab").appendChild(viewer);
+    }
+    viewer.textContent = `Error loading ${file}`;
   }
 }
 
@@ -182,8 +197,5 @@ function switchTab(tabId) {
   document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
   document.getElementById(tabId).classList.add('active');
 
-  // Reload JSON viewer if switching back to Freight
-  if (tabId === "initTab") {
-    loadAndDisplayJson();
-  }
+  if (tabId === "initTab") loadAndDisplayJson();
 }
