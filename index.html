@@ -158,7 +158,7 @@
       <div class="tab active" onclick="switchTab('initTab')">Freight</div>
       <div class="tab" onclick="switchTab('trailerTab')">Trailers</div>
       <div class="tab" onclick="switchTab('attendanceTab')">Attendance</div>
-      <div class="tab" onclick="switchTab('emailTab')">Email</div>
+      <div class="tab" onclick="window.location.href='https://outlook.wal-mart.com/owa/wal-mart.com'">Email</div>
     </div>
     <button class="refresh-btn" onclick="location.reload()" title="Reload App">
       <img src="https://cdn-icons-png.flaticon.com/512/61/61225.png" alt="Refresh">
@@ -211,12 +211,6 @@
     </button>
     <textarea id="attendanceText" placeholder="Paste copied text here..."></textarea>
     <button onclick="submitAttendance()">Submit Attendance</button>
-  </div>
-
-  <div id="emailTab" class="content">
-    <div class="iframe-container">
-      <iframe src="https://outlook.wal-mart.com/owa/wal-mart.com"></iframe>
-    </div>
   </div>
 
   <script src="script.js"></script>
