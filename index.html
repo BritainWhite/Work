@@ -160,16 +160,16 @@
       <div class="tab" onclick="switchTab('attendanceTab')">Attendance</div>
       <div class="tab" onclick="switchTab('emailTab')">Email</div>
     </div>
-    <button class="refresh-btn" onclick="location.reload()">
+    <button class="refresh-btn" onclick="location.reload()" title="Reload App">
       <img src="https://cdn-icons-png.flaticon.com/512/61/61225.png" alt="Refresh">
     </button>
   </div>
 
   <div id="initTab" class="content active">
     <div class="subtabs">
-      <button class="subtab" data-day="yesterday" onclick="selectDayTab('yesterday')">Yesterday</button>
-      <button class="subtab active" data-day="today" onclick="selectDayTab('today')">Today</button>
-      <button class="subtab" data-day="tomorrow" onclick="selectDayTab('tomorrow')">Tomorrow</button>
+      <button class="subtab" onclick="selectDayTab('yesterday')">Yesterday</button>
+      <button class="subtab active" onclick="selectDayTab('today')">Today</button>
+      <button class="subtab" onclick="selectDayTab('tomorrow')">Tomorrow</button>
     </div>
 
     <label for="customDate">Custom Date (yyyy/mm/dd):</label>
@@ -180,11 +180,11 @@
       <button onclick="loadIframe()">Load in Page</button>
     </p>
 
-    <div class="iframe-container">
+    <div class="iframe-container" id="iframePanel">
       <iframe id="previewIframe" src=""></iframe>
     </div>
 
-    <textarea id="field1" placeholder="Paste JSON for today.json"></textarea>
+    <textarea id="field1" placeholder="Paste JSON for init file"></textarea>
     <button onclick="submitField(1)">Submit Today</button>
     <div id="jsonViewer"></div>
   </div>
@@ -206,7 +206,7 @@
     <div class="iframe-container">
       <iframe id="attendanceIframe" src="https://ivrattcloud-prod.wal-mart.com/"></iframe>
     </div>
-    <button onclick="document.getElementById('attendanceIframe').src = 'https://ivrattcloud-prod.wal-mart.com/'">
+    <button onclick="document.getElementById('attendanceIframe').src = 'https://ivrattcloud-prod.wal-mart.com/'" title="Reload Attendance">
       Reload Attendance
     </button>
     <textarea id="attendanceText" placeholder="Paste copied text here..."></textarea>
