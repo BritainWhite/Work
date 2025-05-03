@@ -155,7 +155,7 @@
 <body>
   <div class="top-bar">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('initTab')">Init</div>
+      <div class="tab active" onclick="switchTab('initTab')">Freight</div>
       <div class="tab" onclick="switchTab('trailerTab')">Trailers</div>
       <div class="tab" onclick="switchTab('attendanceTab')">Attendance</div>
     </div>
@@ -179,11 +179,11 @@
       <button onclick="loadIframe()">Load in Page</button>
     </p>
 
-    <div class="iframe-container">
+    <div class="iframe-container" id="iframePanel">
       <iframe id="previewIframe" src=""></iframe>
     </div>
 
-    <textarea id="field1" placeholder="Paste JSON for init.json"></textarea>
+    <textarea id="field1" placeholder="Paste JSON for today.json"></textarea>
     <button onclick="submitField(1)">Submit Today</button>
     <div id="jsonViewer"></div>
   </div>
