@@ -97,8 +97,10 @@ async function submitField(fieldNumber) {
   if (!fieldValue) return;
 
   const activeDay = document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
-  const endpoint = "submit-alt"; // Always use submit-alt for consistency
-  const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "init.json";
+  const endpoint = "submit-alt";
+  const file = activeDay === "yesterday" ? "yesterday.json" :
+               activeDay === "tomorrow" ? "tomorrow.json" :
+               "today.json";
 
   const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
     method: "POST",
