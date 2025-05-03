@@ -1,8 +1,6 @@
 async function generateTrailerLinks() {
   const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids", {
-    headers: {
-      "ngrok-skip-browser-warning": "true"
-    }
+    headers: { "ngrok-skip-browser-warning": "true" }
   });
   const { business_date, trailer_transLoadId_list } = await res.json();
 
@@ -10,7 +8,6 @@ async function generateTrailerLinks() {
 
   const container = document.getElementById("trailerLinks");
   container.innerHTML = "";
-
   const formattedDate = business_date.replace(/-/g, "/");
 
   trailer_transLoadId_list.forEach((id, index) => {
@@ -18,17 +15,19 @@ async function generateTrailerLinks() {
     link.href = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Shipments.ashx?func=getLoadSummaryAndDetailsFromAPI&storeNbr=5307&businessDate=${formattedDate}&loadID=${id}`;
     link.innerText = `Trailer ${index + 1}: ${id}`;
     link.target = "_blank";
-
     const wrapper = document.createElement("p");
     wrapper.appendChild(link);
     container.appendChild(wrapper);
   });
 }
 
+function getActiveDay() {
+  return document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
+}
+
 function updateLink() {
   const customInput = document.getElementById("customDate");
   let formattedDate;
-
   const inputValue = customInput.value.trim();
   const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
 
@@ -56,6 +55,24 @@ function updateSubmitButton(day) {
   }
 }
 
+async function loadAndDisplayJson() {
+  const activeDay = getActiveDay();
+  const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
+
+  try {
+    const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`, {
+      headers: { "ngrok-skip-browser-warning": "true" }
+    });
+    const data = await response.json();
+    const pretty = JSON.stringify(data, null, 2);
+    const viewer = document.getElementById("jsonViewer");
+    if (viewer) viewer.textContent = pretty;
+  } catch (err) {
+    const viewer = document.getElementById("jsonViewer");
+    if (viewer) viewer.textContent = `Error loading ${file}`;
+  }
+}
+
 function updateDateByDay(dayType) {
   const customInput = document.getElementById("customDate");
   const today = new Date();
@@ -66,6 +83,7 @@ function updateDateByDay(dayType) {
   customInput.value = formatted;
   updateLink();
   loadIframe();
+  loadAndDisplayJson();
 }
 
 function selectDayTab(day) {
@@ -79,12 +97,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   const customInput = document.getElementById("customDate");
   let debounceTimer;
 
-  // Debounced input listener
   customInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       updateLink();
       loadIframe();
+      loadAndDisplayJson();
     }, 600);
   });
 
@@ -96,11 +114,9 @@ async function submitField(fieldNumber) {
   const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
   if (!fieldValue) return;
 
-  const activeDay = document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
+  const activeDay = getActiveDay();
   const endpoint = "submit-alt";
-  const file = activeDay === "yesterday" ? "yesterday.json" :
-               activeDay === "tomorrow" ? "tomorrow.json" :
-               "today.json";
+  const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
 
   const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
     method: "POST",
@@ -109,13 +125,7 @@ async function submitField(fieldNumber) {
   });
 
   if (response.ok) {
-    const trailerJson = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json", {
-      headers: { "ngrok-skip-browser-warning": "true" }
-    });
-    const data = await trailerJson.json();
-    const pretty = JSON.stringify(data, null, 2);
-    document.getElementById("jsonViewer").textContent = pretty;
-    document.getElementById("jsonSummary").textContent = pretty;
+    await loadAndDisplayJson();
   } else {
     const errorText = await response.text();
     alert(`Server error: ${errorText}`);
@@ -171,4 +181,9 @@ function switchTab(tabId) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
   document.getElementById(tabId).classList.add('active');
+
+  // Reload JSON viewer if switching back to Freight
+  if (tabId === "initTab") {
+    loadAndDisplayJson();
+  }
 }
