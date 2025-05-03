@@ -150,6 +150,12 @@
     .subtab-content.active {
       display: block;
     }
+
+    #emailTab iframe {
+      height: calc(100vh - 60px); /* Full height minus top bar */
+      width: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -158,6 +164,7 @@
       <div class="tab active" onclick="switchTab('initTab')">Freight</div>
       <div class="tab" onclick="switchTab('trailerTab')">Trailers</div>
       <div class="tab" onclick="switchTab('attendanceTab')">Attendance</div>
+      <div class="tab" onclick="switchTab('emailTab')">Email</div>
     </div>
     <button class="refresh-btn" onclick="location.reload()">
       <img src="https://cdn-icons-png.flaticon.com/512/61/61225.png" alt="Refresh">
@@ -179,7 +186,7 @@
       <button onclick="loadIframe()">Load in Page</button>
     </p>
 
-    <div class="iframe-container" id="iframePanel">
+    <div class="iframe-container">
       <iframe id="previewIframe" src=""></iframe>
     </div>
 
@@ -207,6 +214,10 @@
     </div>
     <textarea id="attendanceText" placeholder="Paste copied text here..."></textarea>
     <button onclick="submitAttendance()">Submit Attendance</button>
+  </div>
+
+  <div id="emailTab" class="content">
+    <iframe src="https://outlook.wal-mart.com/owa/wal-mart.com"></iframe>
   </div>
 
   <script src="script.js"></script>
