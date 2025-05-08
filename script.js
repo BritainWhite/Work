@@ -203,7 +203,7 @@ function switchTab(tabId) {
   document.getElementById(tabId).classList.add('active');
 
   if (tabId === "initTab") {
-    loadLink();
+    updateLink();
     loadIframe();
     loadAndDisplayJson();
   }
