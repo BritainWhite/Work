@@ -93,21 +93,24 @@ async function loadAndDisplayJson() {
 }
 
 async function updateLastModifiedLabel() {
-  const activeDay = getActiveDay();
-  const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
-
   try {
-    const res = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/last-modified/${file}`, {
+    const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/last-modified/code", {
       headers: { "ngrok-skip-browser-warning": "true" }
     });
-    const { lastModified } = await res.json();
+
+    const data = await res.json();
     const label = document.getElementById("lastUpdatedLabel");
+    if (!label || !data["script.js"] || !data["index.html"] || !data["server.js"]) return;
 
-    if (!lastModified || !label) return;
+    const times = [data["index.html"], data["script.js"], data["server.js"]]
+      .map(t => new Date(t))
+      .filter(d => !isNaN(d));
 
-    const updated = new Date(lastModified);
+    if (!times.length) return;
+
+    const latest = new Date(Math.max(...times));
     const now = new Date();
-    const diffMs = now - updated;
+    const diffMs = now - latest;
 
     const seconds = Math.floor(diffMs / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -115,12 +118,13 @@ async function updateLastModifiedLabel() {
     const days = Math.floor(hours / 24);
 
     let text;
-    if (days > 0) text = `Last updated ${days} day${days > 1 ? "s" : ""} ago`;
-    else if (hours > 0) text = `Last updated ${hours} hour${hours > 1 ? "s" : ""} ago`;
-    else if (minutes > 0) text = `Last updated ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-    else text = "Last updated just now";
+    if (days > 0) text = `Code last updated ${days} day${days > 1 ? "s" : ""} ago`;
+    else if (hours > 0) text = `Code last updated ${hours} hour${hours > 1 ? "s" : ""} ago`;
+    else if (minutes > 0) text = `Code last updated ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    else text = "Code last updated just now";
 
     label.textContent = text;
+    label.title = `Last change: ${latest.toLocaleString()}`; // optional
   } catch (err) {
     const label = document.getElementById("lastUpdatedLabel");
     if (label) label.textContent = "";
