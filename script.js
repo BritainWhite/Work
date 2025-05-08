@@ -1,10 +1,14 @@
 async function generateTrailerLinks() {
+  const trailerTab = document.getElementById("trailerTab");
+  if (!trailerTab) return;
+
   let container = document.getElementById("trailerLinks");
   if (!container) {
     container = document.createElement("div");
     container.id = "trailerLinks";
-    document.getElementById("trailerTab").appendChild(container);
+    trailerTab.appendChild(container);
   }
+
   const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids", {
     headers: { "ngrok-skip-browser-warning": "true" }
   });
@@ -27,7 +31,7 @@ async function generateTrailerLinks() {
 }
 
 function getActiveDay() {
-  return document.querySelector(".subtab.active")?.textContent.toLowerCase() || "today";
+  return document.querySelector(".subtab.active")?.textContent.toLowerCase().trim() || "today";
 }
 
 function updateLink() {
@@ -103,7 +107,8 @@ function updateDateByDay(dayType) {
 
 function selectDayTab(day) {
   document.querySelectorAll('.subtab').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`.subtab[onclick*="${day}"]`).classList.add('active');
+  const targetBtn = document.querySelector(`.subtab[data-day="${day}"]`);
+  if (targetBtn) targetBtn.classList.add('active');
   updateDateByDay(day);
   updateSubmitButton(day);
 }
@@ -197,5 +202,9 @@ function switchTab(tabId) {
   document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
   document.getElementById(tabId).classList.add('active');
 
-  if (tabId === "initTab") loadAndDisplayJson();
+  if (tabId === "initTab") {
+    loadLink();
+    loadIframe();
+    loadAndDisplayJson();
+  }
 }
