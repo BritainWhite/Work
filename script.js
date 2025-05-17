@@ -348,3 +348,9 @@ function loadTrailerTabs(json, dateStr) {
     if (idx === 0) tab.click();
   });
 }
+
+function hardRefresh() {
+  const url = new URL(location.href);
+  url.searchParams.set("_", Date.now()); // Add or update cache-busting param
+  location.href = url.toString();
+}
