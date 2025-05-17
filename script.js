@@ -124,12 +124,15 @@ function selectDayTab(day) {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  console.log("🚀 DOMContentLoaded");
+
   const customInput = document.getElementById("customDate");
   let debounceTimer;
 
   customInput.addEventListener("input", () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
+      console.log("📆 Custom date input changed:", customInput.value.trim());
       updateLink();
       loadIframe();
       updateLastModifiedLabel();
@@ -141,16 +144,22 @@ window.addEventListener("DOMContentLoaded", async () => {
   await updateLastModifiedLabel();
 
   try {
+    console.log("📡 Fetching trailers.json...");
     const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
-    if (res.ok) {
-      const json = await res.json();
-      const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-      loadTrailerTabs(json, dateStr);
+    if (!res.ok) {
+      console.error("❌ Failed to fetch trailers.json:", res.status);
+      return;
     }
+
+    const json = await res.json();
+    const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
+    console.log("📦 trailers.json loaded:", json);
+    loadTrailerTabs(json, dateStr);
   } catch (err) {
-    console.warn("Could not preload trailers.json for trailer tabs", err);
+    console.error("❌ Exception during preload of trailers.json:", err);
   }
 });
+
 
 async function submitField(fieldNumber) {
   const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
@@ -239,15 +248,30 @@ function switchTab(tabId) {
 
 function loadTrailerTabs(json, dateStr) {
   const container = document.getElementById("trailerSubtabsContainer");
-  if (!container) return;
+  if (!container) {
+    console.warn("🚫 [loadTrailerTabs] No container with ID 'trailerSubtabsContainer' found.");
+    return;
+  }
+
+  console.log("🔍 [loadTrailerTabs] Called with date:", dateStr);
+  console.log("📦 [loadTrailerTabs] Raw input JSON:", json);
 
   container.innerHTML = "";
 
   const trailers = json?.trailers ?? json?.shipments?.data?.trailers?.payload ?? [];
-  if (!Array.isArray(trailers) || trailers.length === 0) {
+  if (!Array.isArray(trailers)) {
+    console.warn("🚫 [loadTrailerTabs] No trailers array found in input JSON.");
     container.innerText = "No trailers found.";
     return;
   }
+
+  if (trailers.length === 0) {
+    console.warn("⚠️ [loadTrailerTabs] Trailer array is empty.");
+    container.innerText = "No trailers found.";
+    return;
+  }
+
+  console.log(`✅ [loadTrailerTabs] Found ${trailers.length} trailers.`);
 
   const tabBar = document.createElement("div");
   tabBar.className = "subtabs";
@@ -258,7 +282,12 @@ function loadTrailerTabs(json, dateStr) {
 
   trailers.forEach((trailer, idx) => {
     const transLoadId = trailer.transLoadId;
-    if (!transLoadId) return;
+    if (!transLoadId) {
+      console.warn(`❌ [loadTrailerTabs] Missing transLoadId for trailer at index ${idx}:`, trailer);
+      return;
+    }
+
+    console.log(`➕ [loadTrailerTabs] Creating tab for Trailer ${idx + 1}: ${transLoadId}`);
 
     const tab = document.createElement("button");
     tab.className = "subtab";
