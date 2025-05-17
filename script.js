@@ -145,7 +145,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (res.ok) {
       const json = await res.json();
       const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-      loadTrailerTabs({ shipments: { data: { trailers: { payload: json.trailers } } } }, dateStr);
+      loadTrailerTabs({ trailers: json.trailers }, dateStr);
     }
   } catch (err) {
     console.warn("Could not preload trailers.json for trailer tabs", err);
@@ -237,7 +237,7 @@ function loadTrailerTabs(json, dateStr) {
 
   container.innerHTML = "";
 
-  const trailers = json?.shipments?.data?.trailers?.payload ?? [];
+  const trailers = json?.trailers ?? [];
   console.log("DEBUG: loadTrailerTabs called with trailers:", trailers);
 
   if (!Array.isArray(trailers) || trailers.length === 0) {
