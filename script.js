@@ -146,10 +146,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (res.ok) {
       const json = await res.json();
       const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-      loadTrailerTabs({ shipments: { data: { trailers: { payload: json.trailers } } } }, dateStr);
+      loadTrailerTabs({
+        shipments: {
+          data: {
+            trailers: {
+              payload: json.trailers ?? []
+            }
+          }
+        }
+      }, dateStr);
     }
   } catch (err) {
-    console.warn("Could not preload today.json for trailer tabs", err);
+    console.warn("Could not preload trailers.json for trailer tabs", err);
   }
 });
 
