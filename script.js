@@ -12,8 +12,8 @@ async function generateTrailerLinks() {
   const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/trailer-ids", {
     headers: { "ngrok-skip-browser-warning": "true" }
   });
-  const { business_date, trailer_transLoadId_list } = await res.json();
 
+  const { business_date, trailer_transLoadId_list } = await res.json();
   if (!business_date || !Array.isArray(trailer_transLoadId_list)) return;
 
   container.innerHTML = "";
@@ -36,19 +36,16 @@ function getActiveDay() {
 
 function updateLink() {
   const customInput = document.getElementById("customDate");
-  let formattedDate;
   const inputValue = customInput.value.trim();
   const validFormat = /^\d{4}\/\d{2}\/\d{2}$/;
 
+  let formattedDate;
   if (inputValue && validFormat.test(inputValue)) {
     formattedDate = inputValue;
   } else {
     const now = new Date();
     if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    formattedDate = `${yyyy}/${mm}/${dd}`;
+    formattedDate = now.toISOString().slice(0, 10).replace(/-/g, "/");
   }
 
   const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
@@ -61,34 +58,6 @@ function updateSubmitButton(day) {
   const submitBtn = document.querySelector('#initTab button[onclick^="submitField"]');
   if (submitBtn) {
     submitBtn.textContent = `Submit ${day.charAt(0).toUpperCase() + day.slice(1)}`;
-  }
-}
-
-async function loadAndDisplayJson() {
-  const activeDay = getActiveDay();
-  const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
-
-  try {
-    const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`, {
-      headers: { "ngrok-skip-browser-warning": "true" }
-    });
-    const data = await response.json();
-    const pretty = JSON.stringify(data, null, 2);
-    let viewer = document.getElementById("jsonViewer");
-    if (!viewer) {
-      viewer = document.createElement("div");
-      viewer.id = "jsonViewer";
-      document.getElementById("initTab").appendChild(viewer);
-    }
-    viewer.textContent = pretty;
-  } catch (err) {
-    let viewer = document.getElementById("jsonViewer");
-    if (!viewer) {
-      viewer = document.createElement("div");
-      viewer.id = "jsonViewer";
-      document.getElementById("initTab").appendChild(viewer);
-    }
-    viewer.textContent = `Error loading ${file}`;
   }
 }
 
@@ -112,8 +81,7 @@ async function updateLastModifiedLabel() {
     const now = new Date();
     const diffMs = now - latest;
 
-    const seconds = Math.floor(diffMs / 1000);
-    const minutes = Math.floor(seconds / 60);
+    const minutes = Math.floor(diffMs / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
@@ -124,8 +92,8 @@ async function updateLastModifiedLabel() {
     else text = "Code last updated just now";
 
     label.textContent = text;
-    label.title = `Last change: ${latest.toLocaleString()}`; // optional
-  } catch (err) {
+    label.title = `Last change: ${latest.toLocaleString()}`;
+  } catch {
     const label = document.getElementById("lastUpdatedLabel");
     if (label) label.textContent = "";
   }
@@ -135,14 +103,16 @@ function updateDateByDay(dayType) {
   const customInput = document.getElementById("customDate");
   const today = new Date();
   if (today.getHours() < 6) today.setDate(today.getDate() - 1);
+
   const offset = dayType === 'yesterday' ? -1 : dayType === 'tomorrow' ? 1 : 0;
   today.setDate(today.getDate() + offset);
+
   const formatted = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
   customInput.value = formatted;
+
   updateLink();
   loadIframe();
-  loadAndDisplayJson();
-  updateLastModifiedLabel(); // ✅ added
+  updateLastModifiedLabel();
 }
 
 function selectDayTab(day) {
@@ -162,14 +132,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     debounceTimer = setTimeout(() => {
       updateLink();
       loadIframe();
-      loadAndDisplayJson();
-      updateLastModifiedLabel(); // ✅ added
+      updateLastModifiedLabel();
     }, 600);
   });
 
   selectDayTab("today");
   await generateTrailerLinks();
-  await updateLastModifiedLabel(); // ✅ added
+  await updateLastModifiedLabel();
 });
 
 async function submitField(fieldNumber) {
@@ -177,21 +146,18 @@ async function submitField(fieldNumber) {
   if (!fieldValue) return;
 
   const activeDay = getActiveDay();
-  const endpoint = "submit-alt";
   const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
+  const date = document.getElementById("customDate").value.trim();
 
-  const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/${endpoint}`, {
+  const response = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit-alt", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ file, json: fieldValue })
   });
 
   if (response.ok) {
-    const activeDay = getActiveDay();
-    const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
-    const dayDate = document.getElementById("customDate").value.trim();
     const json = await (await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`)).json();
-    loadTrailerTabs(json, dayDate);
+    loadTrailerTabs(json, date);
     await updateLastModifiedLabel();
   } else {
     const errorText = await response.text();
@@ -224,12 +190,7 @@ async function submitAttendance() {
       body: text
     });
 
-    if (res.ok) {
-      alert("Attendance submitted!");
-    } else {
-      const error = await res.text();
-      alert("Server error: " + error);
-    }
+    alert(res.ok ? "Attendance submitted!" : "Server error: " + await res.text());
   } catch (err) {
     alert("Fetch failed: " + err.message);
   }
@@ -252,14 +213,13 @@ function switchTab(tabId) {
   if (tabId === "initTab") {
     updateLink();
     loadIframe();
-    loadAndDisplayJson();
-    updateLastModifiedLabel(); // ✅ also update when switching to Freight
+    updateLastModifiedLabel();
   }
 }
 
 function loadTrailerTabs(json, dateStr) {
   const container = document.getElementById("trailerSubtabsContainer");
-  container.innerHTML = ""; // Reset previous
+  container.innerHTML = "";
 
   const trailers = json?.shipments?.data?.trailers?.payload ?? [];
   if (trailers.length === 0) {
@@ -267,7 +227,6 @@ function loadTrailerTabs(json, dateStr) {
     return;
   }
 
-  // Subtab bar
   const tabBar = document.createElement("div");
   tabBar.className = "subtabs";
 
@@ -277,6 +236,7 @@ function loadTrailerTabs(json, dateStr) {
 
   trailers.forEach((trailer, idx) => {
     const transLoadId = trailer.transLoadId;
+
     const tab = document.createElement("button");
     tab.className = "subtab";
     tab.textContent = `Trailer ${idx + 1}: ${transLoadId}`;
@@ -309,11 +269,7 @@ function loadTrailerTabs(json, dateStr) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
-      if (res.ok) {
-        alert(`Saved ${body.file}`);
-      } else {
-        alert(`Error saving ${body.file}`);
-      }
+      alert(res.ok ? `Saved ${body.file}` : `Error saving ${body.file}`);
     };
 
     content.appendChild(iframe);
