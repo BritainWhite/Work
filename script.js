@@ -167,8 +167,8 @@ async function submitField(fieldNumber) {
   });
 
   if (response.ok) {
-    const json = await (await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json")).json();
-    const dateStr = json.business_date?.replace(/-/g, "/") ?? date;
+    const json = await (await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`)).json();
+    const dateStr = json.schedule?.business_date?.replace(/-/g, "/") ?? date;
     loadTrailerTabs(json, dateStr);
     await updateLastModifiedLabel();
   } else {
