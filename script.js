@@ -303,4 +303,6 @@ function loadTrailerTabs(json, dateStr) {
     tabBar.appendChild(tab);
     if (idx === 0) tab.click();
   });
+  
+  console.log("DEBUG: Loaded trailers", trailers);
 }
