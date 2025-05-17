@@ -187,8 +187,12 @@ async function submitField(fieldNumber) {
   });
 
   if (response.ok) {
-    await loadAndDisplayJson();
-    await updateLastModifiedLabel(); // ✅ update after submit
+    const activeDay = getActiveDay();
+    const file = activeDay === "yesterday" ? "yesterday.json" : activeDay === "tomorrow" ? "tomorrow.json" : "today.json";
+    const dayDate = document.getElementById("customDate").value.trim();
+    const json = await (await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`)).json();
+    loadTrailerTabs(json, dayDate);
+    await updateLastModifiedLabel();
   } else {
     const errorText = await response.text();
     alert(`Server error: ${errorText}`);
@@ -251,4 +255,80 @@ function switchTab(tabId) {
     loadAndDisplayJson();
     updateLastModifiedLabel(); // ✅ also update when switching to Freight
   }
+}
+
+function loadTrailerTabs(json, dateStr) {
+  const container = document.getElementById("trailerSubtabsContainer");
+  container.innerHTML = ""; // Reset previous
+
+  const trailers = json?.shipments?.data?.trailers?.payload ?? [];
+  if (trailers.length === 0) {
+    container.innerText = "No trailers found.";
+    return;
+  }
+
+  // Subtab bar
+  const tabBar = document.createElement("div");
+  tabBar.className = "subtabs";
+
+  const contentWrapper = document.createElement("div");
+  container.appendChild(tabBar);
+  container.appendChild(contentWrapper);
+
+  trailers.forEach((trailer, idx) => {
+    const transLoadId = trailer.transLoadId;
+    const tab = document.createElement("button");
+    tab.className = "subtab";
+    tab.textContent = `Trailer ${idx + 1}: ${transLoadId}`;
+    tab.dataset.tid = transLoadId;
+
+    const content = document.createElement("div");
+    content.className = "subtab-content";
+    content.style.marginTop = "1em";
+
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Shipments.ashx?func=getLoadSummaryAndDetailsFromAPI&storeNbr=5307&businessDate=${dateStr}&loadID=${transLoadId}`;
+    iframe.style.width = "100%";
+    iframe.style.height = "33vh";
+    iframe.style.border = "1px solid #ccc";
+
+    const textarea = document.createElement("textarea");
+    textarea.placeholder = `Paste trailer JSON for ${transLoadId}`;
+    textarea.style.marginTop = "1em";
+
+    const submitBtn = document.createElement("button");
+    submitBtn.textContent = "Submit Trailer";
+    submitBtn.style.marginTop = "0.5em";
+    submitBtn.onclick = async () => {
+      const body = {
+        file: `${transLoadId}.json`,
+        json: textarea.value.trim()
+      };
+      const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/submit-alt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        alert(`Saved ${body.file}`);
+      } else {
+        alert(`Error saving ${body.file}`);
+      }
+    };
+
+    content.appendChild(iframe);
+    content.appendChild(textarea);
+    content.appendChild(submitBtn);
+    contentWrapper.appendChild(content);
+
+    tab.onclick = () => {
+      container.querySelectorAll(".subtab").forEach(t => t.classList.remove("active"));
+      container.querySelectorAll(".subtab-content").forEach(c => c.style.display = "none");
+      tab.classList.add("active");
+      content.style.display = "block";
+    };
+
+    tabBar.appendChild(tab);
+    if (idx === 0) tab.click();
+  });
 }
