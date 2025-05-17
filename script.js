@@ -158,17 +158,19 @@ window.addEventListener("DOMContentLoaded", async () => {
   try {
     logToServer("📡 Fetching trailers.json...");
     const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
-    if (!res.ok) {
-      logToServer("❌ Failed to fetch trailers.json", { status: res.status });
-      return;
-    }
+    const text = await res.text();
 
-    const json = await res.json();
-    const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-    logToServer("📦 trailers.json loaded", json);
-    loadTrailerTabs(json, dateStr);
+    try {
+      const json = JSON.parse(text);
+      const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
+      logToServer("📦 trailers.json loaded", json);
+      loadTrailerTabs(json, dateStr);
+    } catch (err) {
+      logToServer("❌ JSON parse failed - Raw response", text);
+      throw err;
+    }
   } catch (err) {
-    logToServer("❌ Exception during preload of trailers.json", String(err));
+    logToServer("❌ Exception during fetch or parse", String(err));
   }
 });
 
