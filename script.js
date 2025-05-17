@@ -142,10 +142,16 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
-    if (res.ok) {
-      const json = await res.json();
-      const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-      loadTrailerTabs({ trailers: json.trailers }, dateStr);
+    if (response.ok) {
+      await updateLastModifiedLabel();
+
+      // Re-fetch trailer summary and reload subtabs
+      const trailersRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
+      if (trailersRes.ok) {
+        const trailersJson = await trailersRes.json();
+        const dateStr = trailersJson.business_date?.replace(/-/g, "/") ?? date;
+        loadTrailerTabs({ trailers: trailersJson.trailers }, dateStr);
+      }
     }
   } catch (err) {
     console.warn("Could not preload trailers.json for trailer tabs", err);
