@@ -145,7 +145,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (res.ok) {
       const json = await res.json();
       const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-      loadTrailerTabs({ shipments: { data: { trailers: { payload: json.trailers } } } }, dateStr);
+      loadTrailerTabs({ trailers: json.trailers }, dateStr);
     }
   } catch (err) {
     console.warn("Could not preload trailers.json for trailer tabs", err);
@@ -167,9 +167,13 @@ async function submitField(fieldNumber) {
   });
 
   if (response.ok) {
-    const json = await (await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`)).json();
-    const dateStr = json.schedule?.business_date?.replace(/-/g, "/") ?? date;
-    loadTrailerTabs(json, dateStr);
+    // After init is submitted, re-fetch trailers
+    const trailersRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
+    if (trailersRes.ok) {
+      const trailersJson = await trailersRes.json();
+      const dateStr = trailersJson.business_date?.replace(/-/g, "/") ?? date;
+      loadTrailerTabs({ trailers: trailersJson.trailers }, dateStr);
+    }
     await updateLastModifiedLabel();
   } else {
     const errorText = await response.text();
@@ -235,7 +239,7 @@ function loadTrailerTabs(json, dateStr) {
 
   container.innerHTML = "";
 
-  const trailers = json?.shipments?.data?.trailers?.payload ?? [];
+  const trailers = json?.trailers ?? json?.shipments?.data?.trailers?.payload ?? [];
   if (!Array.isArray(trailers) || trailers.length === 0) {
     container.innerText = "No trailers found.";
     return;
