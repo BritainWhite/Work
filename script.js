@@ -138,24 +138,21 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   selectDayTab("today");
   await generateTrailerLinks();
+  await updateLastModifiedLabel();
 
-  const day = getActiveDay();
-  const file = day === "yesterday" ? "yesterday.json" : day === "tomorrow" ? "tomorrow.json" : "today.json";
-  const date = document.getElementById("customDate").value.trim();
-
+  // ✅ NEW: Try to load trailer subtabs from today.json on first load
   try {
-    const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`, {
-      headers: { "ngrok-skip-browser-warning": "true" }
-    });
-    if (response.ok) {
-      const json = await response.json();
-      loadTrailerTabs(json, date);
+    const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/json/today.json");
+    if (res.ok) {
+      const json = await res.json();
+      const now = new Date();
+      if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+      const formatted = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      loadTrailerTabs(json, formatted);
     }
   } catch (err) {
-    console.warn("No existing JSON to load trailer tabs on startup.");
+    console.warn("Could not preload today.json for trailer tabs", err);
   }
-
-  await updateLastModifiedLabel();
 });
 
 // All your other functions remain the same...
