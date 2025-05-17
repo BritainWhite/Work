@@ -5,134 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JSON Submitter</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #333;
-      color: white;
-      padding: 0.5em 1em;
-    }
-
-    .tabs {
-      display: flex;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      max-width: calc(100% - 40px);
-    }
-
-    .tabs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .tab {
-      flex: 0 0 auto;
-      padding: 0.7em 1em;
-      margin-right: 2px;
-      text-align: center;
-      color: white;
-      cursor: pointer;
-      background-color: #444;
-      border-bottom: 3px solid transparent;
-    }
-
-    .tab.active {
-      background: #fff;
-      color: #333;
-      border-bottom: 3px solid #007bff;
-    }
-
-    .refresh-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5em;
-    }
-
-    .refresh-btn img {
-      width: 24px;
-      height: 24px;
-    }
-
-    .content {
-      padding: 1em;
-      display: none;
-    }
-
-    .content.active {
-      display: block;
-    }
-
-    textarea, input[type="text"] {
-      width: 100%;
-      font-size: 1em;
-      margin-top: 1em;
-      font-family: monospace;
-      padding: 0.5em;
-      box-sizing: border-box;
-    }
-
-    textarea {
-      height: 150px;
-    }
-
-    button {
-      margin-top: 1em;
-      padding: 0.7em 1.2em;
-      font-size: 1em;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-
-    .iframe-container {
-      margin-top: 1em;
-      height: 33vh;
-      border: 1px solid #ccc;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .subtabs {
-      display: flex;
-      gap: 0.5em;
-      background: #f0f0f0;
-      padding: 0.5em;
-      overflow-x: auto;
-    }
-
-    .subtab {
-      padding: 0.5em 1em;
-      border: none;
-      background: #ccc;
-      cursor: pointer;
-    }
-
-    .subtab.active {
-      background: #007bff;
-      color: white;
-    }
-
-    .subtab-content {
-      display: none;
-    }
-
-    .subtab-content.active {
-      display: block;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 0.5em 1em; }
+    .tabs { display: flex; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: calc(100% - 40px); }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex: 0 0 auto; padding: 0.7em 1em; margin-right: 2px; text-align: center; color: white; cursor: pointer; background-color: #444; border-bottom: 3px solid transparent; }
+    .tab.active { background: #fff; color: #333; border-bottom: 3px solid #007bff; }
+    .refresh-btn { background: none; border: none; cursor: pointer; padding: 0.5em; }
+    .refresh-btn img { width: 24px; height: 24px; }
+    .content { padding: 1em; display: none; }
+    .content.active { display: block; }
+    textarea, input[type="text"] { width: 100%; font-size: 1em; margin-top: 1em; font-family: monospace; padding: 0.5em; box-sizing: border-box; }
+    textarea { height: 150px; }
+    button { margin-top: 1em; padding: 0.7em 1.2em; font-size: 1em; background: #007bff; color: white; border: none; border-radius: 5px; }
+    .iframe-container { margin-top: 1em; height: 33vh; border: 1px solid #ccc; }
+    iframe { width: 100%; height: 100%; border: none; }
+    .subtabs { display: flex; gap: 0.5em; background: #f0f0f0; padding: 0.5em; overflow-x: auto; }
+    .subtab { padding: 0.5em 1em; border: none; background: #ccc; cursor: pointer; }
+    .subtab.active { background: #007bff; color: white; }
+    .subtab-content { display: none; }
+    .subtab-content.active { display: block; }
   </style>
 </head>
 <body>
@@ -150,28 +42,22 @@
 
   <div id="initTab" class="content active">
     <small id="lastUpdatedLabel" style="color: #555; display: block; margin-bottom: 0.5em;"></small>
-
     <div class="subtabs">
       <button class="subtab" data-day="yesterday" onclick="selectDayTab('yesterday')">Yesterday</button>
       <button class="subtab active" data-day="today" onclick="selectDayTab('today')">Today</button>
       <button class="subtab" data-day="tomorrow" onclick="selectDayTab('tomorrow')">Tomorrow</button>
     </div>
-
     <label for="customDate">Custom Date (yyyy/mm/dd):</label>
     <input type="text" id="customDate">
-
     <p>
       <a id="init" href="#" target="_blank"></a>
       <button onclick="loadIframe()">Load in Page</button>
     </p>
-
     <div class="iframe-container" id="iframePanel">
       <iframe id="previewIframe" src=""></iframe>
     </div>
-
     <textarea id="field1" placeholder="Paste JSON for init file"></textarea>
     <button onclick="submitField(1)">Submit Today</button>
-
     <div id="trailerSubtabsContainer" style="margin-top: 1em;"></div>
   </div>
 
