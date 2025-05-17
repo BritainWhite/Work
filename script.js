@@ -138,6 +138,23 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   selectDayTab("today");
   await generateTrailerLinks();
+
+  const day = getActiveDay();
+  const file = day === "yesterday" ? "yesterday.json" : day === "tomorrow" ? "tomorrow.json" : "today.json";
+  const date = document.getElementById("customDate").value.trim();
+
+  try {
+    const response = await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`, {
+      headers: { "ngrok-skip-browser-warning": "true" }
+    });
+    if (response.ok) {
+      const json = await response.json();
+      loadTrailerTabs(json, date);
+    }
+  } catch (err) {
+    console.warn("No existing JSON to load trailer tabs on startup.");
+  }
+
   await updateLastModifiedLabel();
 });
 
