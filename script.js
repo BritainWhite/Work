@@ -140,28 +140,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   await generateTrailerLinks();
   await updateLastModifiedLabel();
 
-  // ✅ NEW: Try to load trailer subtabs from today.json on first load
   try {
     const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
     if (res.ok) {
       const json = await res.json();
       const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
-      loadTrailerTabs({
-        shipments: {
-          data: {
-            trailers: {
-              payload: json.trailers ?? []
-            }
-          }
-        }
-      }, dateStr);
+      loadTrailerTabs({ shipments: { data: { trailers: { payload: json.trailers } } } }, dateStr);
     }
   } catch (err) {
     console.warn("Could not preload trailers.json for trailer tabs", err);
   }
 });
-
-// All your other functions remain the same...
 
 async function submitField(fieldNumber) {
   const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
@@ -241,10 +230,17 @@ function switchTab(tabId) {
 
 function loadTrailerTabs(json, dateStr) {
   const container = document.getElementById("trailerSubtabsContainer");
+  if (!container) {
+    console.warn("No container found for trailer subtabs.");
+    return;
+  }
+
   container.innerHTML = "";
 
   const trailers = json?.shipments?.data?.trailers?.payload ?? [];
-  if (trailers.length === 0) {
+  console.log("DEBUG: loadTrailerTabs called with trailers:", trailers);
+
+  if (!Array.isArray(trailers) || trailers.length === 0) {
     container.innerText = "No trailers found.";
     return;
   }
@@ -255,9 +251,11 @@ function loadTrailerTabs(json, dateStr) {
   const contentWrapper = document.createElement("div");
   container.appendChild(tabBar);
   container.appendChild(contentWrapper);
+  container.style.display = "block"; // ensure container is visible
 
   trailers.forEach((trailer, idx) => {
     const transLoadId = trailer.transLoadId;
+    if (!transLoadId) return;
 
     const tab = document.createElement("button");
     tab.className = "subtab";
@@ -309,6 +307,4 @@ function loadTrailerTabs(json, dateStr) {
     tabBar.appendChild(tab);
     if (idx === 0) tab.click();
   });
-
-  console.log("DEBUG: Loaded trailers", trailers);
 }
