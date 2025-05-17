@@ -142,13 +142,11 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // ✅ NEW: Try to load trailer subtabs from today.json on first load
   try {
-    const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/json/today.json");
+    const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
     if (res.ok) {
       const json = await res.json();
-      const now = new Date();
-      if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-      const formatted = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
-      loadTrailerTabs(json, formatted);
+      const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
+      loadTrailerTabs({ shipments: { data: { trailers: { payload: json.trailers } } } }, dateStr);
     }
   } catch (err) {
     console.warn("Could not preload today.json for trailer tabs", err);
@@ -303,6 +301,6 @@ function loadTrailerTabs(json, dateStr) {
     tabBar.appendChild(tab);
     if (idx === 0) tab.click();
   });
-  
+
   console.log("DEBUG: Loaded trailers", trailers);
 }
