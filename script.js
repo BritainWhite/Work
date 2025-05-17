@@ -264,25 +264,27 @@ function loadTrailerTabs(json, dateStr) {
     return;
   }
 
-  logToServer("🔍 [loadTrailerTabs] Called with date", dateStr);
-  logToServer("📦 [loadTrailerTabs] Raw input JSON", json);
+  const trailers = json?.trailers ?? json?.shipments?.data?.trailers?.payload ?? [];
+  const visibleDebug = document.createElement("div");
+  visibleDebug.style.background = "#ffecb3";
+  visibleDebug.style.padding = "0.5em";
+  visibleDebug.style.margin = "1em 0";
+  visibleDebug.innerText = `[DEBUG] Found ${trailers.length} trailers in JSON`;
 
   container.innerHTML = "";
+  container.appendChild(visibleDebug);
 
-  const trailers = json?.trailers ?? json?.shipments?.data?.trailers?.payload ?? [];
   if (!Array.isArray(trailers)) {
-    logToServer("🚫 [loadTrailerTabs] No trailers array found in input JSON.");
-    container.innerText = "No trailers found.";
+    logToServer("🚫 [loadTrailerTabs] trailers is not an array");
+    container.innerText += "\nNo trailers found.";
     return;
   }
 
   if (trailers.length === 0) {
-    logToServer("⚠️ [loadTrailerTabs] Trailer array is empty.");
-    container.innerText = "No trailers found.";
+    logToServer("⚠️ [loadTrailerTabs] trailers array is empty");
+    container.innerText += "\nNo trailers found.";
     return;
   }
-
-  logToServer(`✅ [loadTrailerTabs] Found ${trailers.length} trailers.`);
 
   const tabBar = document.createElement("div");
   tabBar.className = "subtabs";
@@ -294,11 +296,9 @@ function loadTrailerTabs(json, dateStr) {
   trailers.forEach((trailer, idx) => {
     const transLoadId = trailer.transLoadId;
     if (!transLoadId) {
-      logToServer(`❌ [loadTrailerTabs] Missing transLoadId at index ${idx}`, trailer);
+      logToServer(`❌ Missing transLoadId at index ${idx}`, trailer);
       return;
     }
-
-    logToServer(`➕ [loadTrailerTabs] Creating tab for Trailer ${idx + 1}`, transLoadId);
 
     const tab = document.createElement("button");
     tab.className = "subtab";
