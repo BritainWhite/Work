@@ -142,16 +142,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
-    if (response.ok) {
-      await updateLastModifiedLabel();
-
-      // Re-fetch trailer summary and reload subtabs
-      const trailersRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
-      if (trailersRes.ok) {
-        const trailersJson = await trailersRes.json();
-        const dateStr = trailersJson.business_date?.replace(/-/g, "/") ?? date;
-        loadTrailerTabs({ trailers: trailersJson.trailers }, dateStr);
-      }
+    if (res.ok) {
+      const json = await res.json();
+      const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
+      loadTrailerTabs(json, dateStr);
     }
   } catch (err) {
     console.warn("Could not preload trailers.json for trailer tabs", err);
@@ -173,8 +167,9 @@ async function submitField(fieldNumber) {
   });
 
   if (response.ok) {
-    const json = await (await fetch(`https://valid-grossly-gibbon.ngrok-free.app/json/${file}`)).json();
-    loadTrailerTabs(json, date);
+    const json = await (await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json")).json();
+    const dateStr = json.business_date?.replace(/-/g, "/") ?? date;
+    loadTrailerTabs(json, dateStr);
     await updateLastModifiedLabel();
   } else {
     const errorText = await response.text();
@@ -193,6 +188,14 @@ async function submitTrailers() {
       });
     }
   }
+
+  const res = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
+  if (res.ok) {
+    const json = await res.json();
+    const dateStr = json.business_date?.replace(/-/g, "/") ?? "";
+    loadTrailerTabs(json, dateStr);
+  }
+
   alert("Trailers submitted.");
 }
 
@@ -243,7 +246,7 @@ function loadTrailerTabs(json, dateStr) {
 
   container.innerHTML = "";
 
-  const trailers = json?.trailers ?? [];
+  const trailers = json?.trailers ?? json?.shipments?.data?.trailers?.payload ?? [];
   console.log("DEBUG: loadTrailerTabs called with trailers:", trailers);
 
   if (!Array.isArray(trailers) || trailers.length === 0) {
@@ -257,7 +260,7 @@ function loadTrailerTabs(json, dateStr) {
   const contentWrapper = document.createElement("div");
   container.appendChild(tabBar);
   container.appendChild(contentWrapper);
-  container.style.display = "block"; // ensure container is visible
+  container.style.display = "block";
 
   trailers.forEach((trailer, idx) => {
     const transLoadId = trailer.transLoadId;
@@ -296,6 +299,13 @@ function loadTrailerTabs(json, dateStr) {
         body: JSON.stringify(body)
       });
       alert(res.ok ? `Saved ${body.file}` : `Error saving ${body.file}`);
+
+      const trailersRes = await fetch("https://valid-grossly-gibbon.ngrok-free.app/data/trailers.json");
+      if (trailersRes.ok) {
+        const trailersJson = await trailersRes.json();
+        const refreshedDate = trailersJson.business_date?.replace(/-/g, "/") ?? "";
+        loadTrailerTabs(trailersJson, refreshedDate);
+      }
     };
 
     content.appendChild(iframe);
