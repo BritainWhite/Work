@@ -1,4 +1,3 @@
-<!-- index.html (GitHub Pages) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +25,10 @@
     .subtab.active { background: #007bff; color: white; }
     .subtab-content { display: none; }
     .subtab-content.active { display: block; }
+    .url-list { list-style:none; padding-left:0; }
+    .url-list li { margin:6px 0; word-break:break-all; }
+    .badge { background:#eef; padding:2px 6px; border-radius:4px; font-size:12px; }
+    .muted { color:#666; }
   </style>
 </head>
 <body>
@@ -41,6 +44,7 @@
     </button>
   </div>
 
+  <!-- Freight / Init -->
   <div id="initTab" class="content active">
     <small id="lastUpdatedLabel" style="color: #555; display: block; margin-bottom: 0.5em;"></small>
     <div class="subtabs">
@@ -62,7 +66,15 @@
     <div id="trailerSubtabsContainer" style="margin-top: 1em;"></div>
   </div>
 
+  <!-- Trailers -->
   <div id="trailerTab" class="content">
+    <h3>Trailer URL List</h3>
+    <p><button onclick="refreshTrailerUrls()">Refresh Trailer URLs</button> <span id="trailerUrlsStatus" class="muted">waiting for server…</span></p>
+    <div><strong>Main:</strong> <span id="radMainUrl" class="muted">—</span></div>
+    <ul id="trailerUrlList" class="url-list"></ul>
+
+    <hr style="margin:1em 0;">
+    <h3>Manual Trailer Uploads</h3>
     <textarea id="field2" placeholder="Paste JSON for trailer1.json"></textarea>
     <textarea id="field3" placeholder="Paste JSON for trailer2.json"></textarea>
     <textarea id="field4" placeholder="Paste JSON for trailer3.json"></textarea>
@@ -72,9 +84,9 @@
     <textarea id="field8" placeholder="Paste JSON for trailer7.json"></textarea>
     <textarea id="field9" placeholder="Paste JSON for trailer8.json"></textarea>
     <button onclick="submitTrailers()">Submit Trailers</button>
-    <div id="trailerLinks"></div>
   </div>
 
+  <!-- Attendance -->
   <div id="attendanceTab" class="content">
     <div class="iframe-container">
       <iframe id="attendanceIframe" src="https://ivrattcloud-prod.wal-mart.com/"></iframe>
