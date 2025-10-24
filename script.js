@@ -1,5 +1,4 @@
 // script.js
-// Hosted on GitHub Pages. Your API lives on ngrok.
 const API = "https://valid-grossly-gibbon.ngrok-free.app";
 const JSON_HEADERS = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
 const PLAIN_HEADERS = { "Content-Type": "text/plain", "ngrok-skip-browser-warning": "true" };
@@ -68,8 +67,14 @@ async function submitAttendance() {
   } catch (e) { alert("Fetch failed: " + e.message); }
 }
 
-/* ---------- Trailers workbench ---------- */
-let TRAILER_STATE = { list: [], selectedIndex: -1 };
+/* ---------- Trailers workbench (large JSON safe) ---------- */
+let TRAILER_STATE = {
+  list: [],
+  selectedIndex: -1,
+  // captured payload not rendered in the DOM (prevents freezes on huge texts)
+  capturedText: null,
+  capturedFrom: null // "paste" | "file" | null
+};
 
 async function refreshTrailerUrls() {
   const statusEl = document.getElementById("trailerUrlsStatus");
@@ -87,7 +92,7 @@ async function refreshTrailerUrls() {
     const data = await res.json();
     const urls = Array.isArray(data.trailerUrls) ? data.trailerUrls : [];
 
-    TRAILER_STATE.list = urls.map((u, i) => ({ ...u, index: i + 1 })); // 1-based index for “Trailer N”
+    TRAILER_STATE.list = urls.map((u, i) => ({ ...u, index: i + 1 })); // 1-based
     TRAILER_STATE.selectedIndex = -1;
 
     if (!TRAILER_STATE.list.length) {
@@ -95,7 +100,7 @@ async function refreshTrailerUrls() {
       return;
     }
 
-    // Build “Trailer N” pills
+    // Build pills
     for (const item of TRAILER_STATE.list) {
       const btn = document.createElement("button");
       btn.className = "pill";
@@ -113,13 +118,21 @@ async function refreshTrailerUrls() {
 }
 
 function clearTrailerView() {
+  TRAILER_STATE.capturedText = null;
+  TRAILER_STATE.capturedFrom = null;
+
   document.getElementById("trailerHeader").textContent = "Select a trailer…";
   const a = document.getElementById("trailerLink"); a.style.display = "none"; a.href = "#"; a.textContent = "";
   document.getElementById("btnLoadTrailer").style.display = "none";
   document.getElementById("trailerIframePanel").style.display = "none";
   document.getElementById("trailerIframe").src = "";
-  const box = document.getElementById("trailerJsonBox"); box.style.display = "none"; box.value = "";
+
+  const box = document.getElementById("trailerJsonBox");
+  box.style.display = "none"; box.value = ""; // small texts only
+
   document.getElementById("btnSendTrailer").style.display = "none";
+  document.getElementById("captureRow").style.display = "none";
+  document.getElementById("payloadStatus").textContent = "";
   document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));
 }
 
@@ -139,12 +152,18 @@ function selectTrailer(index) {
   a.href = item.url; a.textContent = item.url; a.style.display = "inline";
 
   document.getElementById("btnLoadTrailer").style.display = "inline-block";
+
+  // show capture controls
+  document.getElementById("captureRow").style.display = "flex";
+
+  // show textarea (small JSON friendly)
   const box = document.getElementById("trailerJsonBox");
-  box.placeholder = `Paste JSON for trailer${index}.json`;
+  box.placeholder = `Paste JSON for trailer${index}.json (large pastes will be captured without rendering)`;
   box.style.display = "block";
   document.getElementById("btnSendTrailer").style.display = "inline-block";
 }
 
+// Load in iframe
 function loadSelectedTrailer() {
   const item = TRAILER_STATE.list.find(x => x.index === TRAILER_STATE.selectedIndex);
   if (!item) return;
@@ -153,18 +172,84 @@ function loadSelectedTrailer() {
   document.getElementById("trailerIframePanel").style.display = "block";
 }
 
+// Capture: paste without rendering
+(function enablePasteInterceptor() {
+  const box = document.getElementById("trailerJsonBox");
+  box.addEventListener("paste", (e) => {
+    // If the paste is very large, don't render it—stash it in memory.
+    const text = e.clipboardData?.getData("text") || "";
+    if (text && text.length > 50000) { // ~50 KB threshold; tweak as needed
+      e.preventDefault();
+      TRAILER_STATE.capturedText = text;
+      TRAILER_STATE.capturedFrom = "paste";
+      document.getElementById("payloadStatus").textContent =
+        `captured ${formatSize(text.length)} from clipboard (not rendered)`;
+      box.value = ""; // keep small/empty
+    }
+  });
+})();
+
+// Capture: explicit Paste from Clipboard button
+async function captureClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) return;
+    TRAILER_STATE.capturedText = text;
+    TRAILER_STATE.capturedFrom = "paste";
+    document.getElementById("payloadStatus").textContent =
+      `captured ${formatSize(text.length)} from clipboard (not rendered)`;
+    // leave textarea alone
+  } catch (e) {
+    alert("Clipboard read failed (browser permissions). You can still paste into the box.");
+  }
+}
+
+// Capture: file upload
+document.addEventListener("change", (e) => {
+  const picker = document.getElementById("filePicker");
+  if (e.target === picker && picker.files && picker.files[0]) {
+    handleFile(picker.files[0]);
+    picker.value = ""; // reset
+  }
+});
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = String(reader.result || "");
+    TRAILER_STATE.capturedText = text;
+    TRAILER_STATE.capturedFrom = "file";
+    document.getElementById("payloadStatus").textContent =
+      `captured ${formatSize(text.length)} from file (${file.name})`;
+  };
+  reader.readAsText(file);
+}
+
+function formatSize(bytes) {
+  const kb = bytes / 1024, mb = kb / 1024;
+  return mb >= 1 ? `${mb.toFixed(2)} MB` : `${Math.ceil(kb)} KB`;
+}
+
+// Send JSON (uses capturedText if present, else textarea value)
 async function sendSelectedTrailer() {
   const idx = TRAILER_STATE.selectedIndex;
   if (idx < 1) return alert("Pick a trailer first.");
-  const json = document.getElementById("trailerJsonBox").value.trim();
-  if (!json) return alert("Paste the trailer JSON first.");
 
-  const file = `trailer${idx}.json`; // save as trailerN.json
+  const box = document.getElementById("trailerJsonBox");
+  let payload = TRAILER_STATE.capturedText;
+  if (!payload) {
+    // small paste typed by user
+    const v = box.value.trim();
+    if (!v) return alert("Paste or upload trailer JSON first.");
+    payload = v;
+  }
+
+  const file = `trailer${idx}.json`;
   try {
     const res = await fetch(api("/submit-alt"), {
       method: "POST",
       headers: JSON_HEADERS,
-      body: JSON.stringify({ file, json })
+      body: JSON.stringify({ file, json: payload })
     });
     alert(res.ok ? `Saved ${file}` : `Server error: ${await res.text()}`);
   } catch (e) {
