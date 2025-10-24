@@ -37,7 +37,6 @@
     .subtab.active { background: #2f6fff; color: white; }
     .muted { color:#9a9a9a; }
 
-    /* Trailers: numbered buttons row */
     .pill-row { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 4px 0; }
     .pill { padding:6px 10px; border-radius:20px; border:1px solid #333; background:#1b1b1b; cursor:pointer; color:#ddd; }
     .pill.active { background:#2f6fff; color:#fff; border-color:#2f6fff; }
@@ -88,7 +87,6 @@
       <span id="trailerUrlsStatus" class="muted">waiting for server…</span>
     </div>
 
-    <!-- Only visible when there is data -->
     <div id="trailersWorkbench" style="display:none;">
       <div class="pill-row" id="trailerPills"></div>
 
@@ -102,7 +100,18 @@
         <iframe id="trailerIframe" src=""></iframe>
       </div>
 
-      <textarea id="trailerJsonBox" placeholder="Paste JSON for trailerN.json" style="display:none;"></textarea>
+      <div class="row" id="captureRow" style="display:none;">
+        <button id="btnPaste" onclick="captureClipboard()">Paste from Clipboard</button>
+        <button id="btnPickFile" onclick="document.getElementById('filePicker').click()">Upload JSON file</button>
+        <input id="filePicker" type="file" accept="application/json" style="display:none" />
+        <span id="payloadStatus" class="muted"></span>
+      </div>
+
+      <!-- For small JSON only. We intercept giant pastes to avoid freezing -->
+      <textarea id="trailerJsonBox"
+        placeholder="Paste JSON for trailerN.json (large pastes will be captured without rendering)"
+        spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"
+        style="display:none;"></textarea>
       <button id="btnSendTrailer" style="display:none;" onclick="sendSelectedTrailer()">Send JSON for this trailer</button>
     </div>
   </div>
@@ -119,6 +128,6 @@
     <button onclick="submitAttendance()">Submit Attendance</button>
   </div>
 
-  <script src="script.js?v=trailer-workbench-1"></script>
+  <script src="script.js?v=large-json-safe-1"></script>
 </body>
 </html>
