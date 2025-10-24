@@ -175,19 +175,50 @@ function loadSelectedTrailer() {
 // Capture: paste without rendering
 (function enablePasteInterceptor() {
   const box = document.getElementById("trailerJsonBox");
-  box.addEventListener("paste", (e) => {
-    // If the paste is very large, don't render it—stash it in memory.
-    const text = e.clipboardData?.getData("text") || "";
-    if (text && text.length > 50000) { // ~50 KB threshold; tweak as needed
+  const status = document.getElementById("payloadStatus");
+
+  async function capture(text, source) {
+    if (!text) return;
+    TRAILER_STATE.capturedText = text;
+    TRAILER_STATE.capturedFrom = source;
+    status.textContent = `captured ${formatSize(text.length)} from ${source} (not rendered)`;
+    // keep the textarea empty so the DOM never paints huge text
+    box.value = "";
+  }
+
+  box.addEventListener("paste", async (e) => {
+    // Always prevent the browser from inserting the text
+    e.preventDefault();
+
+    // 1) Try standard Clipboard API from the event (Chrome/Edge/Firefox)
+    let text = "";
+    if (e.clipboardData) {
+      text = e.clipboardData.getData("text") || "";
+    }
+
+    // 2) Safari/iOS fallback: read from navigator.clipboard during the user gesture
+    if (!text && navigator.clipboard && navigator.clipboard.readText) {
+      try { text = await navigator.clipboard.readText(); } catch {}
+    }
+
+    // 3) If still nothing (older iOS), guide the user to use the “Paste from Clipboard” button
+    if (!text) {
+      status.textContent = "clipboard blocked by browser — use “Paste from Clipboard” or Upload JSON file";
+      return;
+    }
+
+    capture(text, "clipboard");
+  }, { passive: false });
+
+  // Optional extra safety: block insanely long keypress inserts too
+  box.addEventListener("beforeinput", (e) => {
+    if (e.inputType === "insertFromPaste") {
+      // we already handle it above; just in case some browsers fire this first
       e.preventDefault();
-      TRAILER_STATE.capturedText = text;
-      TRAILER_STATE.capturedFrom = "paste";
-      document.getElementById("payloadStatus").textContent =
-        `captured ${formatSize(text.length)} from clipboard (not rendered)`;
-      box.value = ""; // keep small/empty
     }
   });
 })();
+
 
 // Capture: explicit Paste from Clipboard button
 async function captureClipboard() {
