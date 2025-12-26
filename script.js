@@ -6,6 +6,31 @@ const PLAIN_HEADERS = { "Content-Type": "text/plain", "ngrok-skip-browser-warnin
 function api(path) { return `${API}${path.startsWith("/") ? path : "/" + path}`; }
 function hardRefresh() { const u = new URL(location.href); u.searchParams.set("_", Date.now()); location.href = u.toString(); }
 
+function toServerDay(day) {
+  const d = (day || "today").toLowerCase();
+  return d === "yesterday" ? "Yesterday" : d === "tomorrow" ? "Tomorrow" : "Today";
+}
+
+function updateReportLinks() {
+  const day = toServerDay(getActiveDay());
+  const grocery = document.getElementById("reportGrocery");
+  const cons = document.getElementById("reportConsumables");
+  if (grocery) grocery.href = api(`/reports/Grocery/html?day=${encodeURIComponent(day)}`);
+  if (cons) cons.href = api(`/reports/Consumables/html?day=${encodeURIComponent(day)}`);
+}
+
+function setTrailerDay(day) {
+  const d = (day || "today").toLowerCase();
+  TRAILER_STATE.day = (d === "yesterday" || d === "tomorrow") ? d : "today";
+  document.querySelectorAll("#trailerTab .trailer-subtab").forEach(b => b.classList.remove("active"));
+  const btn = document.querySelector(`#trailerTab .trailer-subtab[data-day="${TRAILER_STATE.day}"]`);
+  if (btn) btn.classList.add("active");
+}
+
+function getTrailerDay() {
+  return TRAILER_STATE?.day || "today";
+}
+
 function switchTab(tabId) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".content").forEach(c => c.classList.remove("active"));
@@ -15,7 +40,7 @@ function switchTab(tabId) {
 }
 
 /* ---------- Freight (init) ---------- */
-function getActiveDay() { return document.querySelector(".subtab.active")?.textContent.toLowerCase().trim() || "today"; }
+function getActiveDay() { return document.querySelector("#initTab .subtab.active")?.getAttribute("data-day") || "today"; }
 function updateSubmitButton(day) {
   const btn = document.querySelector('#initTab button[onclick^="submitField"]');
   if (btn) btn.textContent = `Submit ${day.charAt(0).toUpperCase() + day.slice(1)}`;
@@ -30,9 +55,12 @@ function updateDateByDay(day) {
   input.value = `${yyyy}/${mm}/${dd}`; updateLink();
 }
 function selectDayTab(day) {
-  document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
-  const btn = document.querySelector(`.subtab[data-day="${day}"]`); if (btn) btn.classList.add("active");
-  updateDateByDay(day); updateSubmitButton(day);
+  document.querySelectorAll("#initTab .subtab").forEach(b => b.classList.remove("active"));
+  const btn = document.querySelector(`#initTab .subtab[data-day="${day}"]`);
+  if (btn) btn.classList.add("active");
+  updateDateByDay(day);
+  updateSubmitButton(day);
+  updateReportLinks();
 }
 function updateLink() {
   const customInput = document.getElementById("customDate");
@@ -47,7 +75,14 @@ function updateLink() {
   const url = `https://radapps3.wal-mart.com/Protected/CaseVisibility/ashx/Main.ashx?func=init&storeNbr=5307&businessDate=${formattedDate}`;
   const link = document.getElementById("init"); link.href = url; link.innerText = url;
 }
-function loadIframe() { const url = document.getElementById("init").href; const ifr = document.getElementById("previewIframe"); const panel = document.getElementById("iframePanel"); ifr.src = url; panel.style.display = "block"; }
+function loadIframe() {
+  updateLink();
+  const url = document.getElementById("init").href;
+  const ifr = document.getElementById("previewIframe");
+  const panel = document.getElementById("iframePanel");
+  ifr.src = url;
+  panel.style.display = "block";
+}
 async function submitField(fieldNumber) {
   const fieldValue = document.getElementById(`field${fieldNumber}`).value.trim();
   if (!fieldValue) return;
@@ -87,7 +122,7 @@ async function refreshTrailerUrls() {
   clearTrailerView();
 
   try {
-    const res = await fetch(api("/rad/urls"), { headers: { "ngrok-skip-browser-warning": "true" } });
+    const res = await fetch(api(`/rad/urls?day=${encodeURIComponent(toServerDay(getTrailerDay()))}`), { headers: { "ngrok-skip-browser-warning": "true" } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const urls = Array.isArray(data.trailerUrls) ? data.trailerUrls : [];
@@ -138,7 +173,12 @@ function clearTrailerView() {
 
 function selectTrailer(index) {
   TRAILER_STATE.selectedIndex = index;
-  const item = TRAILER_STATE.list.find(x => x.index === index);
+    // Clear any previously captured payload so it cannot be sent for the wrong trailer
+  TRAILER_STATE.capturedText = null;
+  TRAILER_STATE.capturedFrom = null;
+  const payloadStatus = document.getElementById("payloadStatus");
+  if (payloadStatus) payloadStatus.textContent = "";
+const item = TRAILER_STATE.list.find(x => x.index === index);
   if (!item) return;
 
   document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));
@@ -291,6 +331,14 @@ async function sendSelectedTrailer() {
 /* ---------- boot ---------- */
 window.addEventListener("DOMContentLoaded", () => {
   selectDayTab("today");
+  setTrailerDay("today");
+
+  const customInput = document.getElementById("customDate");
+  if (customInput) {
+    customInput.addEventListener("input", updateLink);
+    customInput.addEventListener("change", updateLink);
+  }
+
   updateLink();
   loadIframe();
   refreshTrailerUrls();
