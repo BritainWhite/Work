@@ -1,3 +1,45 @@
+
+//Force all links to open in the same tab (site default).
+function enforceSameTabLinks(root = document) {
+//Normalize existing anchors.
+  const anchors = root.querySelectorAll("a[href]");
+  for (const a of anchors) {
+    a.target = "_self";
+    //Remove noopener/noreferrer noise if present.
+    if (a.rel) a.rel = "";
+  }
+}
+
+//Intercept clicks to guarantee same-tab navigation even if a link has target=_blank.
+document.addEventListener("click", (e) => {
+  const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+  if (!a) return;
+  //Let modified-click behaviors work (ctrl/cmd click, middle click, etc.)
+  if (e.defaultPrevented) return;
+  if (e.button !== 0) return;
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  //If link is intended to open in a new tab, override to same tab.
+  if ((a.getAttribute("target") || "").toLowerCase() === "_blank") {
+    e.preventDefault();
+    window.location.href = a.href;
+  }
+}, true);
+
+//Also apply whenever the DOM changes (dynamic links).
+const _linkObserver = new MutationObserver((mutations) => {
+  for (const m of mutations) {
+    for (const node of m.addedNodes || []) {
+      if (node.nodeType !== 1) continue;
+      if (node.matches && node.matches("a[href]")) enforceSameTabLinks(node.parentNode || document);
+      else if (node.querySelectorAll) enforceSameTabLinks(node);
+    }
+  }
+});
+_linkObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+//Initial pass.
+document.addEventListener("DOMContentLoaded", () => enforceSameTabLinks());
+
 // script.js
 const API = "https://valid-grossly-gibbon.ngrok-free.app";
 const JSON_HEADERS = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
